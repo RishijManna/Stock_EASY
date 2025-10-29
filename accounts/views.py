@@ -11,7 +11,7 @@ from django.contrib.auth import update_session_auth_hash
 
 
 # -------------------------------------------------------------------
-# LOGIN VIEW — safe (no duplicate email crash)
+# LOGIN VIEW — safe (email is the username)
 # -------------------------------------------------------------------
 def login_view(request):
     if request.user.is_authenticated:
@@ -24,7 +24,7 @@ def login_view(request):
             email = form.cleaned_data.get('username')  # normalized email
             password = form.cleaned_data.get('password')
 
-            # ✅ Always authenticate via username=email (safe & unique)
+            # Always authenticate via username=email
             user = authenticate(request, username=email, password=password)
 
             if user is not None:
@@ -40,19 +40,22 @@ def login_view(request):
 
 
 # -------------------------------------------------------------------
-# REGISTER VIEW
+# REGISTER VIEW — saves licence file, auto-login, redirect to profile
 # -------------------------------------------------------------------
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('inventory:dashboard')
 
-    # Include request.FILES for file uploads
+    # NOTE: include request.FILES for file uploads
     form = RegisterForm(request.POST or None, request.FILES or None)
 
     if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, 'Registration successful. Please log in.')
-        return redirect('accounts:login')
+        # RegisterForm.save() creates User and attaches drug_license_file to Profile
+        user = form.save()
+        # Auto-login so the user immediately sees their licence on Profile page
+        login(request, user)
+        messages.success(request, 'Registration successful. Welcome!')
+        return redirect('accounts:profile')
 
     return render(request, 'accounts/register.html', {'form': form})
 

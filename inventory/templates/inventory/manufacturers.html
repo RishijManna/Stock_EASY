@@ -15,11 +15,28 @@
   <!-- Create / Edit card -->
   <section class="bg-white shadow rounded-2xl ring-1 ring-slate-100">
     <div class="px-6 py-5 border-b border-slate-100">
-      <h2 class="text-lg font-semibold">Add Manufacturer (Customer)</h2>
-      <p class="text-xs text-slate-500 mt-0.5">Use this form to add a new manufacturer/supplier.</p>
+      <h2 class="text-lg font-semibold">
+        {% if editing %}Edit Manufacturer{% else %}Add Manufacturer (Customer){% endif %}
+      </h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        {% if editing %}
+          Update the details and click “Update Manufacturer”.
+        {% else %}
+          Use this form to add a new manufacturer/supplier.
+        {% endif %}
+      </p>
     </div>
 
-    <form method="post" class="p-6 space-y-5">
+    {% if editing %}
+      <div class="px-6 pt-4 text-xs text-slate-600">
+        Editing: <span class="font-medium">{{ editing.name }}</span>
+        <a href="{% url 'inventory:manufacturers' %}" class="ml-2 underline hover:no-underline">Cancel</a>
+      </div>
+    {% endif %}
+
+    <form method="post"
+          action="{% if editing %}{% url 'inventory:manufacturer_edit' editing.pk %}{% else %}{% url 'inventory:manufacturers' %}{% endif %}"
+          class="p-6 space-y-5">
       {% csrf_token %}
 
       {% if form.non_field_errors %}
@@ -65,9 +82,13 @@
       <div class="flex items-center gap-3">
         <button type="submit"
                 class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">
-          Save Manufacturer
+          {% if editing %}Update Manufacturer{% else %}Save Manufacturer{% endif %}
         </button>
-        <span class="text-xs text-slate-500">Saved items appear in the list →</span>
+        {% if editing %}
+          <a href="{% url 'inventory:manufacturers' %}" class="text-xs text-slate-500 hover:underline">Cancel</a>
+        {% else %}
+          <span class="text-xs text-slate-500">Saved items appear in the list →</span>
+        {% endif %}
       </div>
     </form>
   </section>
@@ -94,7 +115,9 @@
         </form>
       </div>
       {% if q %}
-        <div class="mt-2 text-xs text-slate-500">Showing results for: <span class="font-medium text-slate-700">“{{ q }}”</span></div>
+        <div class="mt-2 text-xs text-slate-500">
+          Showing results for: <span class="font-medium text-slate-700">“{{ q }}”</span>
+        </div>
       {% endif %}
     </div>
 
@@ -110,10 +133,19 @@
                 {% if m.phone %} · {{ m.phone }}{% endif %}
               </div>
               {% if m.address %}
-              <div class="mt-1 text-xs text-slate-500">
-                {{ m.address }}
-              </div>
+                <div class="mt-1 text-xs text-slate-500">{{ m.address }}</div>
               {% endif %}
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a href="{% url 'inventory:manufacturer_edit' m.pk %}"
+                 class="px-3 py-1.5 text-sm rounded-lg bg-slate-100 hover:bg-slate-200">Edit</a>
+
+              <form method="post" action="{% url 'inventory:manufacturer_delete' m.pk %}"
+                    onsubmit="return confirm('Delete this manufacturer? This cannot be undone.');">
+                {% csrf_token %}
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700">Delete</button>
+              </form>
             </div>
           </li>
           {% endfor %}

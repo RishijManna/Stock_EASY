@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 
+from django.db.models.functions import Lower
+
 class Manufacturer(models.Model):
     name = models.CharField(max_length=150)
     contact_person = models.CharField(max_length=150, blank=True)
@@ -11,6 +13,16 @@ class Manufacturer(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        constraints = [
+            # ABC == Abc == abc
+            models.UniqueConstraint(
+                Lower('name'),
+                name='uniq_manufacturer_name_ci',
+            )
+        ]
+
 
 class Medicine(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)

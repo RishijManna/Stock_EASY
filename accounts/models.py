@@ -1,3 +1,4 @@
+# accounts/models.py
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -5,8 +6,8 @@ def drug_license_upload_path(instance, filename):
     return f"drug_licenses/user_{instance.user_id}/{filename}"
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=150)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    full_name = models.CharField(max_length=150, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
 

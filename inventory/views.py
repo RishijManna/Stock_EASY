@@ -122,7 +122,6 @@ def records(request):
         date_filter = Q()
         dq = q
         try:
-            # naive parse attempts
             from datetime import datetime
             for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
                 try:
@@ -237,3 +236,44 @@ def medlist_partial(request):
         meds = meds.filter(Q(name__icontains=q) | Q(medicine_id__icontains=q))
     html = render_to_string('inventory/_med_list.html', {'meds': meds}, request)
     return HttpResponse(html)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def manufacturer_edit(request, pk):
+    obj = get_object_or_404(Manufacturer, pk=pk)
+    if request.method == "POST":
+        form = ManufacturerForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Manufacturer updated.")
+            return redirect('inventory:manufacturers')
+    else:
+        form = ManufacturerForm(instance=obj)
+
+    # Reuse same page: left = form (editing), right = list
+    q = request.GET.get('q', '').strip()
+    items = Manufacturer.objects.all().order_by('name')
+    if q:
+        items = items.filter(
+            Q(name__icontains=q) |
+            Q(contact_person__icontains=q) |
+            Q(phone__icontains=q) |
+            Q(address__icontains=q)
+        )
+
+    return render(request, 'inventory/manufacturers.html', {
+        'form': form,
+        'items': items,
+        'q': q,
+        'editing': obj,  # flag for template
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def manufacturer_delete(request, pk):
+    obj = get_object_or_404(Manufacturer, pk=pk)
+    obj.delete()
+    messages.success(request, "Manufacturer deleted.")
+    return redirect('inventory:manufacturers')

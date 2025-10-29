@@ -87,7 +87,7 @@
     <div class="px-6 py-4 border-b border-slate-100">
       <h3 class="text-sm font-semibold text-slate-700">Govt Proof & Professional</h3>
     </div>
-    <div class="p-6 text-sm space-y-4">
+    <div class="p-6 text-sm space-y-5">
       <div>
         <div class="text-slate-500">Govt ID Type</div>
         <div class="font-medium text-slate-900">{{ profile.gov_id_type|default:"—" }}</div>
@@ -103,6 +103,27 @@
           <div class="font-medium text-slate-900">—</div>
         {% endif %}
         <p class="text-xs text-slate-500 mt-1">You can change this from the Edit Profile page.</p>
+      </div>
+
+      <!-- NEW: Drug Selling Licence -->
+      <div>
+        <div class="text-slate-500">Drug Selling Licence</div>
+        {% if profile.drug_license_file %}
+          <div class="mt-1 flex items-center gap-3">
+            <a href="{{ profile.drug_license_file.url }}" class="text-brand-700 hover:underline" target="_blank" rel="noopener">
+              View / Download Licence
+            </a>
+            {% with url=profile.drug_license_file.url|lower %}
+              {% if ".png" in url or ".jpg" in url or ".jpeg" in url %}
+                <img src="{{ profile.drug_license_file.url }}" alt="Licence preview"
+                     class="h-16 rounded border border-slate-200">
+              {% endif %}
+            {% endwith %}
+          </div>
+        {% else %}
+          <div class="font-medium text-slate-900">—</div>
+        {% endif %}
+        <p class="text-xs text-slate-500 mt-1">Uploaded during registration. You can replace it from Edit Profile.</p>
       </div>
     </div>
   </div>

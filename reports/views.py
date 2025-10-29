@@ -1,6 +1,7 @@
+# reports/views.py
 from datetime import timedelta
 import pandas as pd
-from django.db.models import F
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils import timezone
 from inventory.models import Medicine, Transaction
@@ -15,6 +16,7 @@ EXPIRY_FIELD     = "exp_date"
 COST_FIELD       = "cost_price"
 ON_HAND_FIELD    = "quantity_on_hand"
 
+@login_required
 def reports_view(request):
     user = request.user
     today = timezone.localdate()
@@ -104,7 +106,8 @@ def reports_view(request):
     recent_transactions = []
     for t in recent_qs:
         dtv = getattr(t, TXN_DATE_FIELD, None)
-        if hasattr(dtv, "date"): dtv = dtv.date()
+        if hasattr(dtv, "date"):
+            dtv = dtv.date()
         med = getattr(t, MEDICINE_FK, None)
         partner = getattr(t, "partner_name", None) or getattr(t, "partner", "-")
         qty = int(getattr(t, QTY_FIELD, 0) or 0)
@@ -132,7 +135,7 @@ def reports_view(request):
         s_sold = sold_qty.reindex(meds_names).fillna(0).astype(int)
         s_rev = revenue.reindex(meds_names).fillna(0.0).astype(float)
 
-        for i, row in df_meds.iterrows():
+        for _, row in df_meds.iterrows():
             name = row["name"]
             bought = int(s_bought.get(name, 0))
             sold = int(s_sold.get(name, 0))
@@ -163,10 +166,8 @@ def reports_view(request):
         .select_related(MEDICINE_FK)
         .values("created_at", "ttype", "partner_name", "medicine__name", "unit_price", "quantity")
     )
+    all_detailed_rows = detailed_rows
 
-    all_detailed_rows = detailed_rows  # already full set
-
-    # ========= CONTEXT =========
     context = {
         "rev_day": rev_day, "rev_week": rev_week, "rev_month": rev_month, "rev_year": rev_year,
         "total_profit": total_profit, "expired_loss_total": expired_loss_total,
@@ -175,7 +176,6 @@ def reports_view(request):
         "revenue_timeseries": revenue_timeseries, "top_medicines": top_medicines,
         "expiry_pie": expiry_pie, "weekly_bought_sold": weekly_bought_sold,
         "inv_by_medicine": inv_by_medicine, "profit_by_medicine": profit_by_medicine,
-        # extra for Excel
         "all_transactions": list(all_transactions),
         "all_detailed_rows": all_detailed_rows,
     }
