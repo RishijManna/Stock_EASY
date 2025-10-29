@@ -1,0 +1,20 @@
+{% for m in meds %}
+<a href="#" data-detail-url="{% url 'inventory:medicine_detail_partial' m.pk %}"
+   class="flex items-center justify-between p-4 hover:bg-slate-50">
+  <div class="min-w-0">
+    <div class="font-medium text-slate-900 truncate">{{ m.name }} <span class="text-slate-400">({{ m.medicine_id }})</span></div>
+    <div class="text-xs text-slate-500">Qty: {{ m.quantity_on_hand }}</div>
+  </div>
+  <div>
+    {% if m.expiry_status == 'expired' %}
+      <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-xs px-2 py-0.5">Expired</span>
+    {% elif m.expiry_status == 'expiring' %}
+      <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs px-2 py-0.5">Expiring</span>
+    {% else %}
+      <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5">OK</span>
+    {% endif %}
+  </div>
+</a>
+{% empty %}
+<div class="p-6 text-slate-500">No medicines yet. Add some in <a class="text-brand-700 hover:underline" href="{% url 'inventory:records' %}">Records</a>.</div>
+{% endfor %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="bg-white shadow rounded-xl p-6">
+    <h1 class="text-xl font-semibold mb-4">Sign in</h1>
+
+    {% if form.non_field_errors %}
+      <div class="mb-3 rounded-md p-3 bg-red-50 text-red-700 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <form method="post" class="space-y-4" novalidate>
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        {{ form.username|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+        {{ form.password|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+      <button class="w-full inline-flex justify-center rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">Login</button>
+    </form>
+    <p class="text-sm text-slate-600 mt-4 text-center">New here?
+      <a href="{% url 'accounts:register' %}" class="text-brand-700 hover:underline">Register now</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

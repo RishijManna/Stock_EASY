@@ -1,0 +1,78 @@
+<nav class="sticky top-0 z-[500] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75
+            border-b border-slate-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex h-14 items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="inline-flex items-center gap-2">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white font-bold">M</span>
+          <span class="font-semibold text-slate-900">MedShop</span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <!-- Desktop links -->
+        <div class="hidden sm:flex items-center gap-1 ml-6">
+          <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 {% if request.path == '/' %}bg-slate-100{% endif %}">Dashboard</a>
+          <a href="/reports/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 {% if request.path|slice:':9' == '/reports/' %}bg-slate-100{% endif %}">Reports</a>
+          <a href="/records/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 {% if request.path|slice:':8' == '/records' %}bg-slate-100{% endif %}">Records</a>
+          <a href="/manufacturers/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 {% if request.path|slice:':15' == '/manufacturers' %}bg-slate-100{% endif %}">Manufacturers</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center gap-2">
+        {% if user.is_authenticated %}
+          <!-- Desktop right actions -->
+          <a href="/accounts/profile/" class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-slate-100 hover:bg-slate-200">Profile</a>
+          <a href="/accounts/logout/" class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-red-50 text-red-700 hover:bg-red-100">Logout</a>
+
+          <!-- Mobile menu button -->
+          <button id="nav-toggle" class="sm:hidden inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100"
+                  aria-controls="nav-menu" aria-expanded="false">
+            <span class="sr-only">Toggle menu</span>
+            <!-- Hamburger -->
+            <svg id="icon-open" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <!-- Close -->
+            <svg id="icon-close" class="h-6 w-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if user.is_authenticated %}
+  <!-- Mobile dropdown -->
+  <div id="nav-menu" class="sm:hidden hidden border-t border-slate-200 bg-white">
+    <div class="px-4 py-3 space-y-1">
+      <a href="/" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-100">Dashboard</a>
+      <a href="/reports/" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-100">Reports</a>
+      <a href="/records/" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-100">Records</a>
+      <a href="/manufacturers/" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-100">Manufacturers</a>
+      <div class="h-px bg-slate-200 my-2"></div>
+      <a href="/accounts/profile/" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-100">Profile</a>
+      <a href="/accounts/logout/" class="block px-3 py-2 rounded-md text-base font-medium bg-red-50 text-red-700 hover:bg-red-100">Logout</a>
+    </div>
+  </div>
+  {% endif %}
+</nav>
+
+<script>
+  (function () {
+    const btn = document.getElementById('nav-toggle');
+    const menu = document.getElementById('nav-menu');
+    const openI = document.getElementById('icon-open');
+    const closeI = document.getElementById('icon-close');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', () => {
+      const isHidden = menu.classList.toggle('hidden'); // returns true if now hidden
+      openI.classList.toggle('hidden', !isHidden);
+      closeI.classList.toggle('hidden', isHidden);
+      btn.setAttribute('aria-expanded', String(!isHidden));
+    });
+  })();
+</script>

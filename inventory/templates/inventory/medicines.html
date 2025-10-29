@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">All Medicines</h1>
+<form class="flex gap-2 mb-4" method="get">
+  <input class="w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500" type="search" name="q" value="{{ q }}" placeholder="Search by name or ID" />
+  <button class="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">Search</button>
+</form>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div id="medList" class="bg-white shadow rounded-xl divide-y">
+    {% for m in meds %}
+    <a href="#" data-detail-url="{% url 'inventory:medicine_detail_partial' m.pk %}"
+       class="block p-4 hover:bg-slate-50">
+      <div class="font-medium">{{ m.name }}</div>
+      <div class="text-xs text-slate-500">{{ m.medicine_id }}</div>
+    </a>
+    {% endfor %}
+  </div>
+  <div id="detailPane" class="bg-white shadow rounded-xl min-h-[240px]">
+    <div class="p-4 text-slate-500">Select a medicine…</div>
+  </div>
+</div>
+{% endblock %}

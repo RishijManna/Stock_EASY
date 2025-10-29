@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+{% block content %}
+
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Edit Profile</h1>
+  <p class="text-slate-500 text-sm" style="color: black;">Update your contact information and upload a Govt ID document.</p>
+</div>
+
+<section class="bg-white shadow rounded-2xl ring-1 ring-slate-100">
+  <div class="px-6 py-5 border-b border-slate-100">
+    <h2 class="text-lg font-semibold">Profile Details</h2>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="p-6 space-y-5">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-amber-50 text-amber-900 text-sm p-3">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+        {{ form.full_name|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+        {{ form.phone|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Address</label>
+        {{ form.address|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Govt ID Type</label>
+        {{ form.gov_id_type|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+        <p class="text-xs text-slate-500 mt-1">Example: Aadhaar, PAN, Drug License, GST, etc.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Govt ID File</label>
+        {{ form.gov_id_file }}
+        <p class="text-xs text-slate-500 mt-1">Allowed: PDF, JPG, JPEG, PNG (max 8MB)</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">
+        Save Changes
+      </button>
+
+      <!-- NEW: Change password trigger -->
+      <button type="button"
+              id="openChangePwd"
+              class="inline-flex items-center rounded-lg bg-slate-800 px-4 py-2 text-white hover:bg-slate-900">
+        Change Password
+      </button>
+
+      <a href="{% url 'accounts:profile' %}" class="text-slate-700 hover:underline">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<!-- NEW: Password change modal -->
+<div id="pwdModal"
+     class="fixed inset-0 z-50 hidden"
+     aria-hidden="true">
+  <!-- overlay -->
+  <div class="absolute inset-0 bg-black/40"></div>
+
+  <!-- dialog -->
+  <div class="relative mx-auto mt-20 w-full max-w-md">
+    <div class="bg-white rounded-2xl shadow-xl ring-1 ring-slate-200 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-semibold">Change Password</h3>
+        <button id="closePwdModal" class="text-slate-500 hover:text-slate-700">&times;</button>
+      </div>
+
+      <form id="pwdForm" class="p-5 space-y-4">
+        {% csrf_token %}
+        <div id="pwdErrors" class="hidden rounded-lg bg-rose-50 text-rose-700 text-sm p-3"></div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Old password</label>
+          <input name="old_password" type="password"
+                 class="w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500"
+                 required>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">New password</label>
+          <input name="new_password1" type="password"
+                 class="w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500"
+                 required>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Confirm new password</label>
+          <input name="new_password2" type="password"
+                 class="w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500"
+                 required>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" id="cancelPwd"
+                  class="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">Cancel</button>
+          <button type="submit" id="submitPwd"
+                  class="rounded-lg px-4 py-2 text-white bg-brand-600 hover:bg-brand-700">
+            Update Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: minimal JS for modal + AJAX -->
+<script>
+  // Modal open/close
+  const modal = document.getElementById('pwdModal');
+  const openBtn = document.getElementById('openChangePwd');
+  const closeBtn = document.getElementById('closePwdModal');
+  const cancelBtn = document.getElementById('cancelPwd');
+  const errorBox = document.getElementById('pwdErrors');
+
+  function openModal() { modal.classList.remove('hidden'); }
+  function closeModal() {
+    modal.classList.add('hidden');
+    errorBox.classList.add('hidden');
+    errorBox.innerHTML = '';
+    document.getElementById('pwdForm').reset();
+  }
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  // CSRF helper (reads csrftoken cookie set by Django)
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+
+  // AJAX submit
+  const pwdForm = document.getElementById('pwdForm');
+  const submitBtn = document.getElementById('submitPwd');
+
+  pwdForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+
+    const formData = new FormData(pwdForm);
+
+    try {
+      const resp = await fetch("{% url 'accounts:password_change_ajax' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie('csrftoken') },
+        body: formData
+      });
+
+      if (resp.ok) {
+        closeModal();
+        // Optional: toast
+        alert('Password updated successfully.');
+      } else {
+        const data = await resp.json();
+        const messages = [];
+        for (const [field, errs] of Object.entries(data.errors)) {
+          errs.forEach(msg => messages.push(`<li><strong>${field}:</strong> ${msg}</li>`));
+        }
+        errorBox.innerHTML = `<ul class="list-disc pl-4">${messages.join('')}</ul>`;
+        errorBox.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorBox.textContent = 'Something went wrong. Please try again.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update Password';
+    }
+  });
+</script>
+
+{% endblock %}

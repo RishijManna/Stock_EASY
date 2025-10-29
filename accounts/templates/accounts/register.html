@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white shadow rounded-xl p-6">
+    <h1 class="text-xl font-semibold mb-4">Create account</h1>
+
+    {% if form.non_field_errors %}
+      <div class="mb-3 rounded-md p-3 bg-red-50 text-red-700 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    {% if form.errors %}
+      <div class="mb-3 rounded-md p-3 bg-amber-50 text-amber-900 text-sm">
+        <ul class="list-disc ml-5">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <li><strong>{{ field|capfirst }}</strong>: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {# IMPORTANT: enctype for file uploads #}
+    <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4" novalidate>
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Full Name</label>
+        {{ form.full_name|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        {{ form.email|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        {{ form.password|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+        <p class="text-xs text-slate-500 mt-1">Minimum 8 characters.</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone</label>
+        {{ form.phone|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Address</label>
+        {{ form.address|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      {# REPLACED: Govt Medical License -> Drug Selling Licence (File upload) #}
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Drug Selling Licence (upload)</label>
+        {{ form.drug_license_file|add_class:'w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500' }}
+        <p class="text-xs text-slate-500 mt-1">Accepted: PDF/JPG/PNG, up to 5 MB.</p>
+      </div>
+
+      {# Hidden username (unchanged) #}
+      {{ form.username }}
+
+      <div class="md:col-span-2 flex items-center gap-3 mt-2">
+        <button type="submit" class="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">
+          Create Account
+        </button>
+        <a class="text-brand-700 hover:underline" href="{% url 'accounts:login' %}">Back to login</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

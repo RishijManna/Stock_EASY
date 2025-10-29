@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+{% block content %}
+
+<!-- Header -->
+<div class="mb-6 flex items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Manufacturers</h1>
+    <p class="text-slate-500 text-sm" style="color: black;">Add new manufacturers and view your current list.</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <!-- Create / Edit card -->
+  <section class="bg-white shadow rounded-2xl ring-1 ring-slate-100">
+    <div class="px-6 py-5 border-b border-slate-100">
+      <h2 class="text-lg font-semibold">Add Manufacturer (Customer)</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Use this form to add a new manufacturer/supplier.</p>
+    </div>
+
+    <form method="post" class="p-6 space-y-5">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="rounded-lg bg-amber-50 text-amber-900 text-sm p-3">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      {% if form.errors %}
+      <div class="rounded-lg bg-amber-50 text-amber-900 text-sm p-3">
+        <strong>Fix the following:</strong>
+        <ul class="list-disc ml-5 mt-1">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <li><b>{{ field|capfirst }}</b>: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Name</label>
+        {{ form.name|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+        {% if form.name.errors %}<p class="text-xs text-red-600 mt-1">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Contact Person</label>
+        {{ form.contact_person|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone</label>
+        {{ form.phone|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Address</label>
+        {{ form.address|add_class:'w-full rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500' }}
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit"
+                class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">
+          Save Manufacturer
+        </button>
+        <span class="text-xs text-slate-500">Saved items appear in the list →</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- List card with Search -->
+  <section class="bg-white shadow rounded-2xl ring-1 ring-slate-100">
+    <div class="px-6 py-5 border-b border-slate-100">
+      <div class="flex items-end justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold">All Manufacturers</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Search by name, contact, phone, or address.</p>
+        </div>
+
+        <form method="get" class="flex items-center gap-2">
+          <input type="search" name="q" value="{{ q|default:'' }}" placeholder="Search manufacturers…"
+                 class="rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500 px-3 py-1.5 w-64"
+                 autocomplete="off">
+          <button class="inline-flex items-center rounded-lg bg-brand-600 px-3 py-1.5 text-white hover:bg-brand-700">
+            Search
+          </button>
+          {% if q %}
+            <a href="{% url 'inventory:manufacturers' %}" class="text-slate-600 text-sm hover:underline">Clear</a>
+          {% endif %}
+        </form>
+      </div>
+      {% if q %}
+        <div class="mt-2 text-xs text-slate-500">Showing results for: <span class="font-medium text-slate-700">“{{ q }}”</span></div>
+      {% endif %}
+    </div>
+
+    <div class="p-6">
+      {% if items %}
+        <ul class="divide-y">
+          {% for m in items %}
+          <li class="py-3 flex items-start justify-between gap-4">
+            <div>
+              <div class="font-medium text-slate-900">{{ m.name }}</div>
+              <div class="mt-0.5 text-xs text-slate-500">
+                {% if m.contact_person %}{{ m.contact_person }}{% else %}—{% endif %}
+                {% if m.phone %} · {{ m.phone }}{% endif %}
+              </div>
+              {% if m.address %}
+              <div class="mt-1 text-xs text-slate-500">
+                {{ m.address }}
+              </div>
+              {% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="text-slate-500 text-sm">No manufacturers found.</div>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

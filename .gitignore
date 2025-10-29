@@ -1,0 +1,59 @@
+# ==============================
+#  Django + Tailwind Project
+#  MedShop Tracker .gitignore
+# ==============================
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.py~
+*.sqlite3
+db.sqlite3
+media/
+uploads/
+staticfiles/
+static_cdn/
+
+# Tailwind & Node build artifacts (if you ever use npm)
+node_modules/
+dist/
+build/
+*.map
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local environment / secrets
+.env
+*.env
+.env.*
+
+# Coverage / Testing
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+
+# Backup files
+*.bak
+*.swp
+*.swo
+
+# Misc
+__MACOSX/

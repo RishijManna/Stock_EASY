@@ -1,0 +1,108 @@
+html, body {
+  height: 100%;
+}
+
+#detailPane {
+  min-height: 260px;
+}
+
+/* ============================================================
+   UNIVERSAL FORM ELEMENT STYLING (for visibility & usability)
+   ============================================================ */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+select,
+textarea {
+  border: 1px solid #cbd5e1;       /* slate-300 */
+  background: #ffffff;             /* white */
+  border-radius: 0.5rem;           /* rounded-lg */
+  padding: 0.5rem 0.75rem;         /* px-3 py-2 */
+  width: 100%;
+  min-height: 2.5rem;
+  outline: none;
+  color: #0f172a;                  /* slate-900 text */
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #3b82f6;           /* brand-500 */
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.25); /* focus ring */
+}
+
+/* =========================================
+   GLOBAL APP BACKGROUND (Light + Dark Mode)
+   ========================================= */
+:root {
+  /* base color and overlays for light mode */
+  --bg-base-color: #f8fafc; /* slate-50 */
+  --bg-overlay-light: radial-gradient(
+      1000px 800px at 10% 0%,
+      rgba(59,130,246,0.10) 0%,
+      rgba(59,130,246,0.06) 30%,
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 600px at 90% 100%,
+      rgba(16,185,129,0.12) 0%,
+      rgba(16,185,129,0.06) 35%,
+      transparent 65%
+    );
+  /* ✅ use relative path so it works after collectstatic */
+  --bg-image-url: url("../img/abstract-bg.png");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* dark mode overlay adjustments */
+    --bg-base-color: #0f172a; /* slate-900 */
+    --bg-overlay-light: radial-gradient(
+        1000px 800px at 10% 0%,
+        rgba(59,130,246,0.25) 0%,
+        rgba(59,130,246,0.15) 30%,
+        transparent 60%
+      ),
+      radial-gradient(
+        900px 600px at 90% 100%,
+        rgba(16,185,129,0.28) 0%,
+        rgba(16,185,129,0.15) 35%,
+        transparent 65%
+      );
+  }
+}
+
+/* =========================================
+   APP BACKGROUND CONTAINER
+   ========================================= */
+.app-bg {
+  
+  background-image: var(--bg-overlay-light), var(--bg-image-url);
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
+  background-position: center, center;
+  background-attachment: fixed, fixed;
+  min-height: 100vh;
+  transition: background 0.5s ease-in-out;
+}
+
+/* =========================================
+   SEMI-TRANSLUCENT SURFACES / CARDS
+   ========================================= */
+.surface {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  border: 1px solid rgba(148,163,184,0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  .surface {
+    background: rgba(30,41,59,0.65); /* slightly dimmed dark mode surface */
+    border-color: rgba(148,163,184,0.25);
+  }
+}

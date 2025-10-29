@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+{% block content %}
+
+<!-- Header -->
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Records</h1>
+  <p class="text-slate-500 text-sm" style="color: black;">Manage medicines and all purchase/sale transactions.</p>
+</div>
+
+<!-- Two-column layout -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+  <!-- Medicine section -->
+  <section class="xl:col-span-2 bg-white shadow rounded-2xl ring-1 ring-slate-100">
+    <div class="px-6 py-5 border-b border-slate-100">
+      <h2 class="text-lg font-semibold">Add / Update Medicine</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Store or update medicine details in your inventory.</p>
+    </div>
+
+    <form method="post" class="p-6 space-y-6">
+      {% csrf_token %}
+      {{ mform.non_field_errors }}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Medicine Name</label>
+          {{ mform.name|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Medicine ID</label>
+          {{ mform.medicine_id|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Manufacturer</label>
+          {{ mform.manufacturer|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Cost Price</label>
+          {{ mform.cost_price|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">MRP</label>
+          {{ mform.mrp|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Manufacture Date</label>
+          {{ mform.mfg_date|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Expiry Date</label>
+          {{ mform.exp_date|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+
+        
+      </div>
+
+      <div class="pt-2">
+        <button name="save_medicine"
+                class="bg-brand-600 text-white rounded-lg px-5 py-2 hover:bg-brand-700 font-medium">
+          Save Medicine
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Transaction section -->
+  <section class="bg-white shadow rounded-2xl ring-1 ring-slate-100">
+    <div class="px-6 py-5 border-b border-slate-100">
+      <h2 class="text-lg font-semibold">Record Bought / Sold</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Track purchases or sales; stock adjusts automatically.</p>
+    </div>
+
+    <form method="post" class="p-6 space-y-5" id="txnForm">
+      {% csrf_token %}
+      {{ tform.non_field_errors }}
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Select Medicine</label>
+        {{ tform.medicine|add_class:'border bg-white rounded-lg w-full' }}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Transaction Type</label>
+        {{ tform.ttype|add_class:'border bg-white rounded-lg w-full' }}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Partner Name</label>
+        {{ tform.partner_name|add_class:'border bg-white rounded-lg w-full' }}
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Unit Price (₹)</label>
+          {{ tform.unit_price|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Quantity</label>
+          {{ tform.quantity|add_class:'border bg-white rounded-lg w-full' }}
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-slate-50 px-4 py-3 text-sm flex items-center justify-between">
+        <span class="text-slate-600 font-medium">Total Amount</span>
+        <span id="txnTotal" class="font-semibold text-slate-900">₹0.00</span>
+      </div>
+
+      <button name="save_txn"
+              class="w-full bg-emerald-600 text-white rounded-lg px-4 py-2 hover:bg-emerald-700 font-medium">
+        Save Transaction
+      </button>
+    </form>
+  </section>
+</div>
+
+<!-- Transactions Search -->
+<div class="mt-10 mb-2 flex items-center justify-between">
+  <h2 class="text-lg font-semibold">All Transactions</h2>
+  <form method="get" class="flex gap-2">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search by name, partner, or date"
+           class="rounded-lg border border-slate-300 bg-white focus:border-brand-500 focus:ring-brand-500 px-3 py-1.5 w-72"
+           autocomplete="off">
+    <button class="bg-brand-600 text-white rounded-lg px-4 py-1.5 hover:bg-brand-700">Search</button>
+  </form>
+</div>
+
+<!-- Transactions Table -->
+<div class="overflow-x-auto bg-white shadow rounded-2xl ring-1 ring-slate-100">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50 text-slate-600">
+      <tr>
+        <th class="px-4 py-2 text-left">Date</th>
+        <th class="px-4 py-2 text-left">Type</th>
+        <th class="px-4 py-2 text-left">Medicine</th>
+        <th class="px-4 py-2 text-left">Partner</th>
+        <th class="px-4 py-2 text-left">Quantity</th>
+        <th class="px-4 py-2 text-left">Unit Price (₹)</th>
+        <th class="px-4 py-2 text-left">Total (₹)</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for t in txns %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-2">{{ t.created_at|date:'Y-m-d H:i' }}</td>
+        <td class="px-4 py-2">
+          {% if t.ttype == 'BOUGHT' %}
+            <span class="inline-flex items-center rounded-full bg-sky-100 text-sky-800 text-xs px-2 py-0.5">Bought</span>
+          {% else %}
+            <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs px-2 py-0.5">Sold</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-2">{{ t.medicine.name }}</td>
+        <td class="px-4 py-2">{{ t.partner_name }}</td>
+        <td class="px-4 py-2">{{ t.quantity }}</td>
+        <td class="px-4 py-2">₹{{ t.unit_price }}</td>
+        <td class="px-4 py-2 font-semibold text-slate-900">₹{{ t.total_amount }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="px-6 py-6 text-center text-slate-500">No transactions found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Live total JS -->
+<script>
+  (function () {
+    function calc() {
+      const price = parseFloat(document.getElementById('id_unit_price')?.value || '0');
+      const qty = parseFloat(document.getElementById('id_quantity')?.value || '0');
+      const total = (isNaN(price) ? 0 : price) * (isNaN(qty) ? 0 : qty);
+      const el = document.getElementById('txnTotal');
+      if (el) el.textContent = '₹' + total.toFixed(2);
+    }
+    document.addEventListener('input', (e) => {
+      if (['id_unit_price', 'id_quantity'].includes(e.target.id)) calc();
+    });
+    document.addEventListener('DOMContentLoaded', calc);
+  })();
+</script>
+
+{% endblock %}

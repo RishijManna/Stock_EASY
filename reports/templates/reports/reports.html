@@ -1,0 +1,760 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Reports · MedShop Tracker{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Heading -->
+  <div class="flex items-end justify-between">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">Reports</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400" style="color: black;">Live analytics from your transactions and inventory.</p>
+    </div>
+    <button id="btn-export" class="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-sm shadow hover:opacity-90">
+      Export CSV
+    </button>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Revenue (Today)</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue;">₹{{ rev_day|default:0|floatformat:2 }}</div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Revenue (This Week)</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue">₹{{ rev_week|default:0|floatformat:2 }}</div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Revenue (This Month)</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue;">₹{{ rev_month|default:0|floatformat:2 }}</div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Revenue (This Year)</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue" >₹{{ rev_year|default:0|floatformat:2 }}</div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Total Profit</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue">₹{{ total_profit|default:0|floatformat:2 }}</div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Expired Stock Loss (Cost)</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue">₹{{ expired_loss_total|default:0|floatformat:2 }}</div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 shadow rounded-2xl p-4 xl:col-span-2">
+      <div class="text-xs text-slate-500 dark:text-slate-400">Profit / Loss % (Overall)</div>
+      <div class="text-2xl font-semibold mt-1" style="color: aliceblue">
+        {% if profit_pct_overall is not None %}{{ profit_pct_overall|floatformat:1 }}%{% else %}N/A{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts grid (Plotly divs) -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue Trend</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">last 60 days</span>
+      </div>
+      <div id="plRevenue" style="height:220px;"></div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Top Medicines (Sold Qty)</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">top 10</span>
+      </div>
+      <div id="plTopMeds" style="height:220px;"></div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Inventory by Expiry Status</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">expired / expiring 30d / ok</span>
+      </div>
+      <div id="plExpiry" style="height:220px;"></div>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Weekly Bought vs Sold</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">by ISO week</span>
+    </div>
+    <div id="plWeekly" style="height:260px;"></div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-3">Inventory by Medicine (Qty remaining)</h2>
+      <div id="plInv" style="height:260px;"></div>
+    </div>
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-3">Profit / Loss by Medicine</h2>
+      <div id="plProfit" style="height:260px;"></div>
+    </div>
+  </div>
+  <!-- === Advanced Visuals (add-on) ===================================== -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+  <!-- 7-day Rolling Revenue -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue (7-day Rolling Avg)</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">derived from daily revenue</span>
+    </div>
+    <div id="plRevRolling" style="height:220px;"></div>
+  </div>
+
+  <!-- Cumulative Revenue -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Cumulative Revenue</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">from Jan 2025</span>
+    </div>
+    <div id="plRevCum" style="height:220px;"></div>
+  </div>
+
+  <!-- Revenue by Weekday -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue by Weekday</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">Mon–Sun</span>
+    </div>
+    <div id="plRevWeekday" style="height:220px;"></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+  <!-- Weekly Sell-through % -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Sell-through % (Weekly)</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">Sold ÷ (Bought + Sold)</span>
+    </div>
+    <div id="plSellThrough" style="height:260px;"></div>
+  </div>
+
+  <!-- Profit Distribution -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit Distribution (per Medicine)</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">histogram</span>
+    </div>
+    <div id="plProfitHist" style="height:260px;"></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+  <!-- Inventory Treemap -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Inventory Treemap (Remaining Qty)</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">by medicine</span>
+    </div>
+    <div id="plInvTreemap" style="height:340px;"></div>
+  </div>
+
+  <!-- Profit vs Remaining (Scatter) -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit vs Remaining</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">join of profit & inventory</span>
+    </div>
+    <div id="plProfitVsInv" style="height:340px;"></div>
+  </div>
+</div>
+<!-- =================================================================== -->
+
+
+  <!-- Recent transactions table (unchanged) -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-2 sm:p-4">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Recent Transactions (Detailed)</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Last 15 entries</p>
+      </div>
+      <a href="{% url 'inventory:records' %}" class="text-xs text-slate-500 hover:underline">View all →</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="sticky top-0 bg-slate-50 dark:bg-slate-800 text-left text-slate-600 dark:text-slate-300">
+          <tr>
+            <th class="py-2 pr-4">Date</th>
+            <th class="py-2 pr-4">Type</th>
+            <th class="py-2 pr-4">Partner</th>
+            <th class="py-2 pr-4">Medicine</th>
+            <th class="py-2 pr-4 text-right">Unit Price</th>
+            <th class="py-2 pr-4 text-right">Qty</th>
+            <th class="py-2 pr-4 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% if recent_transactions %}
+            {% for t in recent_transactions %}
+              <tr class="align-top hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                <td class="py-2 pr-4 text-slate-700 dark:text-slate-200 whitespace-nowrap">{{ t.date }}</td>
+                <td class="py-2 pr-4">
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                               {% if t.type|upper == 'SOLD' or t.type|upper == 'EXPORT' %}
+                                 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200
+                               {% else %}
+                                 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200
+                               {% endif %}">
+                    {{ t.type }}
+                  </span>
+                </td>
+                <td class="py-2 pr-4 text-slate-700 dark:text-slate-200">{{ t.partner }}</td>
+                <td class="py-2 pr-4 text-slate-700 dark:text-slate-200">{{ t.medicine }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">₹{{ t.unit_price|floatformat:2 }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">{{ t.qty }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200 font-medium">₹{{ t.total|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="7" class="py-6 text-center text-slate-500 dark:text-slate-400">No recent transactions found.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Profit table (unchanged) -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-2 sm:p-4">
+    <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-3">Profit / Inventory Summary</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="text-left text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="py-2 pr-4">Medicine</th>
+            <th class="py-2 pr-4 text-right">Bought</th>
+            <th class="py-2 pr-4 text-right">Sold</th>
+            <th class="py-2 pr-4 text-right">Remaining</th>
+            <th class="py-2 pr-4 text-right">Revenue</th>
+            <th class="py-2 pr-4 text-right">COGS</th>
+            <th class="py-2 pr-4 text-right">Expired Loss</th>
+            <th class="py-2 pr-4 text-right">Profit</th>
+            <th class="py-2 pr-4 text-right">Profit %</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% if detailed_rows %}
+            {% for r in detailed_rows %}
+              <tr>
+                <td class="py-2 pr-4 text-slate-700 dark:text-slate-200">{{ r.medicine }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">{{ r.bought }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">{{ r.sold }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">{{ r.remaining }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">₹{{ r.revenue|floatformat:2 }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">₹{{ r.cogs|floatformat:2 }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">₹{{ r.expired_loss|floatformat:2 }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200 font-medium">₹{{ r.profit|floatformat:2 }}</td>
+                <td class="py-2 pr-4 text-right text-slate-700 dark:text-slate-200">{{ r.profit_pct|floatformat:1 }}%</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="9" class="py-6 text-center text-slate-500 dark:text-slate-400">No data yet.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# Pass data to JS safely #}
+{{ revenue_timeseries|json_script:"pl_revenue" }}
+{{ top_medicines|json_script:"pl_top" }}
+{{ expiry_pie|json_script:"pl_expiry" }}
+{{ weekly_bought_sold|json_script:"pl_weekly" }}
+{{ inv_by_medicine|json_script:"pl_inv" }}
+{{ profit_by_medicine|json_script:"pl_profit" }}
+
+<!-- Plotly -->
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+(function () {
+  const dark = document.documentElement.classList.contains('dark');
+  const MIN_DATE = '2025-01-01'; // anchor from Jan 2025
+  const TODAY = new Date().toISOString().slice(0, 10);
+
+
+  const layoutBase = {
+    margin: { l: 40, r: 10, t: 10, b: 40 },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: dark ? '#cbd5e1' : '#475569' },
+    xaxis: { gridcolor: dark ? 'rgba(148,163,184,.2)' : 'rgba(100,116,139,.15)' },
+    yaxis: { gridcolor: dark ? 'rgba(148,163,184,.2)' : 'rgba(100,116,139,.15)' },
+    hovermode: 'x unified'
+  };
+
+   const read = (id, fallback) => {
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    try { return JSON.parse(el.textContent); } catch { return fallback; }
+  };
+
+
+  // ---------- Load datasets ----------
+  const rev = read('pl_revenue', []);
+  const top = read('pl_top', []);
+  const ex  = read('pl_expiry', {expired:0, expiring_30d:0, ok:0});
+  const wk  = read('pl_weekly', []);
+  const inv = read('pl_inv', []);
+  const pf  = read('pl_profit', []);
+
+  // ---------- Revenue line (date axis from Jan 2025) ----------
+  if (document.getElementById('plRevenue')) {
+    // Parse & sanitize
+    const xDates = rev.map(d => new Date(d.date)).filter(d => !isNaN(d));
+    const yVals  = rev.map(d => Number(d.revenue) || 0);
+
+    Plotly.newPlot(
+      'plRevenue',
+      [{
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Revenue',
+        x: xDates,        // pass Date objects, not raw strings
+        y: yVals,
+        line: { width: 2 }
+      }],
+      {
+        ...layoutBase,
+        xaxis: {
+          ...layoutBase.xaxis,
+          type: 'date',
+          range: [MIN_DATE, TODAY],  // always start from Jan 2025 to today
+          rangeselector: null,
+          rangeslider: { visible: false }
+        },
+        yaxis: { ...layoutBase.yaxis, tickprefix: '₹', rangemode: 'tozero' }
+      },
+      { responsive: true }
+    );
+  }
+
+  // ---------- Top medicines (category axis) ----------
+  if (top.length && document.getElementById('plTopMeds')) {
+    Plotly.newPlot(
+      'plTopMeds',
+      [{
+        type: 'bar', name: 'Qty Sold',
+        x: top.map(d => d.name),
+        y: top.map(d => d.qty_sold)
+      }],
+      {
+        ...layoutBase,
+        xaxis: { type: 'category', categoryorder: 'total descending' }
+      },
+      { responsive: true }
+    );
+  }
+
+  // ---------- Expiry pie ----------
+  if (document.getElementById('plExpiry')) {
+    Plotly.newPlot(
+      'plExpiry',
+      [{
+        type: 'pie',
+        labels: ['Expired', 'Expiring ≤30d', 'OK'],
+        values: [ex.expired || 0, ex.expiring_30d || 0, ex.ok || 0],
+        hole: 0.35
+      }],
+      { ...layoutBase, showlegend: true },
+      { responsive: true }
+    );
+  }
+
+
+// ---------- Weekly bought vs sold (category axis; grouped bars) ----------
+if (wk.length && document.getElementById('plWeekly')) {
+  Plotly.newPlot(
+    'plWeekly',
+    [
+      { type: 'bar', name: 'Bought', x: wk.map(d => d.week), y: wk.map(d => d.bought) },
+      { type: 'bar', name: 'Sold',   x: wk.map(d => d.week), y: wk.map(d => d.sold) }
+    ],
+    {
+      ...layoutBase,
+      barmode: 'group',          // <-- was 'stack'
+      xaxis: { type: 'category' }
+    },
+    { responsive: true }
+  );
+}
+
+
+  // ---------- Inventory remaining (category axis) ----------
+  if (inv.length && document.getElementById('plInv')) {
+    const names = inv.map(d => d.name);
+    Plotly.newPlot(
+      'plInv',
+      [{
+        type: 'bar', name: 'Remaining',
+        x: names,
+        y: inv.map(d => d.remaining)
+      }],
+      {
+        ...layoutBase,
+        xaxis: { type: 'category', categoryorder: 'array', categoryarray: names }
+      },
+      { responsive: true }
+    );
+  }
+
+  // ---------- Profit by medicine (category axis; allow negatives) ----------
+  if (pf.length && document.getElementById('plProfit')) {
+    const names = pf.map(d => d.name);
+    Plotly.newPlot(
+      'plProfit',
+      [{
+        type: 'bar', name: 'Profit',
+        x: names,
+        y: pf.map(d => d.profit)
+      }],
+      {
+        ...layoutBase,
+        xaxis: { type: 'category', categoryorder: 'array', categoryarray: names },
+        yaxis: { ...layoutBase.yaxis, zeroline: true, zerolinecolor: '#94a3b8' }
+      },
+      { responsive: true }
+    );
+  }
+    // ===== Helpers for derived series ==================================
+  const toISODateOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const sortByDate = (arr, key) =>
+    [...arr].map(v => ({...v, _dt: new Date(v[key])}))
+            .filter(v => !isNaN(v._dt))
+            .sort((a,b) => a._dt - b._dt);
+
+  // Build daily series (fill missing dates with 0 so rolling/cumulative look clean)
+  const buildDailySeries = (rows) => {
+    if (!rows?.length) return { dates: [], values: [] };
+    const sorted = sortByDate(rows, 'date');
+    const start = new Date(MIN_DATE);
+    const end = new Date(TODAY);
+    const map = new Map(sorted.map(r => [new Date(r.date).toDateString(), Number(r.revenue)||0]));
+    const dates = [];
+    const values = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+      dates.push(new Date(d));
+      values.push(map.get(d.toDateString()) || 0);
+    }
+    return { dates, values };
+  };
+
+  const rollingAvg = (values, w=7) => {
+    const out = [];
+    let run = 0;
+    for (let i=0;i<values.length;i++){
+      run += values[i];
+      if (i>=w) run -= values[i-w];
+      out.push( i>=w-1 ? run/w : null ); // null keeps Plotly gap for first (w-1) days
+    }
+    return out;
+  };
+
+  const cumulative = (values) => {
+    let c = 0; return values.map(v => (c += (Number(v)||0)));
+  };
+
+  // ===== 7-day Rolling Revenue =======================================
+  if (document.getElementById('plRevRolling') && rev?.length){
+    const { dates, values } = buildDailySeries(rev);
+    Plotly.newPlot(
+      'plRevRolling',
+      [{ type:'scatter', mode:'lines', name:'7-day Avg', x:dates, y:rollingAvg(values, 7), line:{ width:2 } }],
+      {
+        ...layoutBase,
+        xaxis:{ ...layoutBase.xaxis, type:'date', range:[MIN_DATE, TODAY] },
+        yaxis:{ ...layoutBase.yaxis, tickprefix:'₹', rangemode:'tozero' }
+      },
+      { responsive:true }
+    );
+  }
+
+  // ===== Cumulative Revenue ==========================================
+  if (document.getElementById('plRevCum') && rev?.length){
+    const { dates, values } = buildDailySeries(rev);
+    Plotly.newPlot(
+      'plRevCum',
+      [{ type:'scatter', mode:'lines', fill:'tozeroy', name:'Cumulative', x:dates, y:cumulative(values), line:{ width:2 } }],
+      {
+        ...layoutBase,
+        xaxis:{ ...layoutBase.xaxis, type:'date', range:[MIN_DATE, TODAY] },
+        yaxis:{ ...layoutBase.yaxis, tickprefix:'₹', rangemode:'tozero' }
+      },
+      { responsive:true }
+    );
+  }
+
+  // ===== Revenue by Weekday (Mon..Sun) ================================
+  if (document.getElementById('plRevWeekday') && rev?.length){
+    const weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const sums = new Array(7).fill(0);
+    const counts = new Array(7).fill(0);
+    rev.forEach(r => {
+      const d = new Date(r.date); if (isNaN(d)) return;
+      // JS getDay(): 0=Sun..6=Sat → remap to 0=Mon..6=Sun
+      const js = d.getDay();
+      const idx = (js === 0) ? 6 : js - 1;
+      sums[idx] += Number(r.revenue)||0;
+      counts[idx] += 1;
+    });
+    Plotly.newPlot(
+      'plRevWeekday',
+      [{ type:'bar', x:weekdays, y:sums }],
+      { ...layoutBase, yaxis:{ ...layoutBase.yaxis, tickprefix:'₹' } },
+      { responsive:true }
+    );
+  }
+
+  // ===== Sell-through % from weekly (Sold ÷ (Bought+Sold)) ===========
+  if (document.getElementById('plSellThrough') && wk?.length){
+    const weeks = wk.map(d => d.week);
+    const pct = wk.map(d => {
+      const b = Number(d.bought)||0, s = Number(d.sold)||0;
+      const denom = b + s;
+      return denom > 0 ? (s/denom)*100 : null;
+    });
+    Plotly.newPlot(
+      'plSellThrough',
+      [{ type:'scatter', mode:'lines+markers', name:'Sell-through %', x:weeks, y:pct }],
+      {
+        ...layoutBase,
+        xaxis:{ ...layoutBase.xaxis, type:'category' },
+        yaxis:{ ...layoutBase.yaxis, rangemode:'tozero', ticksuffix:'%' }
+      },
+      { responsive:true }
+    );
+  }
+
+ // ===== Profit Distribution (per Medicine, white hover text) ==========
+if (document.getElementById('plProfitHist') && pf?.length) {
+  const names = pf.map(d => String(d.name));
+  const profits = pf.map(d => Number(d.profit) || 0);
+
+  Plotly.newPlot(
+    'plProfitHist',
+    [
+      // Histogram layer
+      {
+        type: 'histogram',
+        x: profits,
+        nbinsx: 20,
+        name: 'Profit bins',
+        marker: { opacity: 0.6 },
+        hoverinfo: 'skip', // disable default bin hover
+      },
+      // Scatter layer for hover names
+      {
+        type: 'scatter',
+        mode: 'markers',
+        x: profits,
+        y: profits.map(() => 0),
+        text: names.map(
+          (n, i) => `${n}<br>Profit: ₹${profits[i].toFixed(2)}`
+        ),
+        hovertemplate: '%{text}<extra></extra>',
+        marker: {
+          size: 8,
+          color: dark ? '#ffffff' : '#000000', // white in dark mode, black in light mode
+          opacity: 1,
+          line: { width: 1, color: dark ? '#e2e8f0' : '#1e293b' },
+        },
+        name: 'Medicines',
+      },
+    ],
+    {
+      ...layoutBase,
+      xaxis: { ...layoutBase.xaxis, title: 'Profit (₹)' },
+      yaxis: { ...layoutBase.yaxis, visible: false },
+      showlegend: false,
+      margin: { l: 40, r: 10, t: 10, b: 40 },
+      hoverlabel: {
+        
+        font: { color: '#ffffff', size: 13 }, // white hover text for all
+      },
+    },
+    { responsive: true }
+  );
+}
+
+
+  // ===== Inventory Treemap (Remaining by medicine) ====================
+  if (document.getElementById('plInvTreemap') && inv?.length){
+    const labels = inv.map(d => d.name);
+    const values = inv.map(d => Number(d.remaining)||0);
+    Plotly.newPlot(
+      'plInvTreemap',
+      [{ type:'treemap', labels, parents: labels.map(_ => ''), values, branchvalues:'total' }],
+      { ...layoutBase },
+      { responsive:true }
+    );
+  }
+
+  // ===== Profit vs Remaining (join inv + pf by name) ==================
+  if (document.getElementById('plProfitVsInv') && inv?.length && pf?.length){
+    const profitMap = new Map(pf.map(d => [String(d.name), Number(d.profit)||0]));
+    const points = inv.map(d => ({
+      name: String(d.name),
+      remaining: Number(d.remaining)||0,
+      profit: profitMap.get(String(d.name)) ?? null
+    })).filter(p => p.profit !== null);
+
+    Plotly.newPlot(
+      'plProfitVsInv',
+      [{
+        type:'scatter',
+        mode:'markers',
+        x: points.map(p => p.remaining),
+        y: points.map(p => p.profit),
+        text: points.map(p => p.name),
+        hovertemplate: '%{text}<br>Remaining: %{x}<br>Profit: ₹%{y:.2f}<extra></extra>',
+        marker:{ size: 10, opacity: 0.85 }
+      }],
+      {
+        ...layoutBase,
+        xaxis:{ ...layoutBase.xaxis, title:'Remaining Qty', rangemode:'tozero' },
+        yaxis:{ ...layoutBase.yaxis, title:'Profit (₹)', zeroline:true, zerolinecolor: dark ? '#94a3b8' : '#94a3b8' }
+      },
+      { responsive:true }
+    );
+  }
+
+  // ===== Optional: Extra CSV exports for the new derived series =======
+  const exportBtn = document.getElementById('btn-export');
+  if (exportBtn){
+    const _old = exportBtn.onclick; // keep your current listener added earlier (you used addEventListener)
+    exportBtn.addEventListener('click', () => {
+      // Rolling & cumulative
+      if (rev?.length){
+        const { dates, values } = buildDailySeries(rev);
+        const roll = rollingAvg(values, 7).map(v => v==null ? '' : v);
+        const cum  = cumulative(values);
+        const rowsRolling = dates.map((d,i)=>[d.toISOString().slice(0,10), roll[i]]);
+        const rowsCum     = dates.map((d,i)=>[d.toISOString().slice(0,10), cum[i]]);
+        // Reuse your existing exportCSV helper
+        exportCSV('revenue_rolling_7d.csv', ['date','rolling_7d'], rowsRolling);
+        exportCSV('revenue_cumulative.csv', ['date','cumulative'], rowsCum);
+      }
+      // Sell-through
+      if (wk?.length){
+        const rows = wk.map(d => {
+          const b = Number(d.bought)||0, s = Number(d.sold)||0, denom = b+s;
+          const pct = denom>0 ? (s/denom)*100 : '';
+          return [d.week, pct];
+        });
+        exportCSV('sellthrough_weekly.csv', ['week','sellthrough_pct'], rows);
+      }
+    });
+  }
+
+
+  // ---------- Export multiple CSVs ----------
+  const exportCSV = (filename, header, rows) => {
+    const csv = [header, ...rows].map(r => r.map(v => (v ?? '')).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  document.getElementById('btn-export')?.addEventListener('click', () => {
+    // 1) Revenue
+    exportCSV('revenue_timeseries.csv', ['date','revenue'], rev.map(r => [r.date, r.revenue]));
+
+    // 2) Weekly Bought/Sold
+    exportCSV('weekly_bought_sold.csv', ['week','bought_qty','sold_qty'], wk.map(r => [r.week, r.bought, r.sold]));
+
+    // 3) Top medicines
+    exportCSV('top_medicines.csv', ['medicine','qty_sold'], top.map(r => [r.name, r.qty_sold]));
+
+    // 4) Inventory by medicine
+    exportCSV('inventory_remaining.csv', ['medicine','remaining_qty'], inv.map(r => [r.name, r.remaining]));
+
+    // 5) Profit by medicine
+    exportCSV('profit_by_medicine.csv', ['medicine','profit'], pf.map(r => [r.name, r.profit]));
+  });
+    // === FULL DATA EXCEL EXPORT ======================================
+  const ALL_TXN  = read('pl_txn_all', []);
+  const ALL_SUMM = read('pl_summary_all', []);
+
+  const money = v => (v == null ? null : Number(v));
+  const percent = v => (v == null ? null : Number(v));
+
+  const toTransactionRows = arr => arr.map(t => ({
+    Date: t.created_at ? t.created_at.slice(0,10) : '',
+    Type: t.ttype,
+    Partner: t.partner_name,
+    Medicine: t["medicine__name"],
+    "Unit Price (₹)": money(t.unit_price),
+    Qty: Number(t.quantity || 0),
+    "Total (₹)": money((t.unit_price || 0) * (t.quantity || 0)),
+  }));
+
+  const toSummaryRows = arr => arr.map(r => ({
+    Medicine: r.medicine,
+    Bought: Number(r.bought || 0),
+    Sold: Number(r.sold || 0),
+    Remaining: Number(r.remaining || 0),
+    "Revenue (₹)": money(r.revenue),
+    "COGS (₹)": money(r.cogs),
+    "Expired Loss (₹)": money(r.expired_loss),
+    "Profit (₹)": money(r.profit),
+    "Profit %": percent(r.profit_pct),
+  }));
+
+  const setColWidths = (ws, widths) => ws['!cols'] = widths.map(w => ({ wch: w }));
+
+  const applyNumberFormats = (ws, moneyCols=[], percentCols=[]) => {
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let C=range.s.c; C<=range.e.c; ++C) {
+      for (let R=range.s.r+1; R<=range.e.r; ++R) {
+        const addr = XLSX.utils.encode_cell({r:R,c:C});
+        const cell = ws[addr];
+        if (!cell || typeof cell.v!=='number') continue;
+        const headerAddr = XLSX.utils.encode_cell({r:range.s.r,c:C});
+        const headerText = ws[headerAddr]?.v || '';
+        if (moneyCols.includes(headerText)) cell.z = '"₹"#,##0.00;[Red]"₹"-#,##0.00';
+        if (percentCols.includes(headerText)) cell.z = '0.0%';
+      }
+    }
+  };
+
+  document.getElementById('btn-export')?.addEventListener('click', () => {
+    try {
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Transactions
+      const wsTx = XLSX.utils.json_to_sheet(toTransactionRows(ALL_TXN));
+      setColWidths(wsTx, [12,10,18,24,14,8,14]);
+      applyNumberFormats(wsTx, ["Unit Price (₹)", "Total (₹)"], []);
+      XLSX.utils.book_append_sheet(wb, wsTx, "Transactions");
+
+      // Sheet 2: Profit Summary
+      const wsSum = XLSX.utils.json_to_sheet(toSummaryRows(ALL_SUMM));
+      setColWidths(wsSum, [24,10,10,11,14,12,18,12,9]);
+      applyNumberFormats(wsSum,
+        ["Revenue (₹)", "COGS (₹)", "Expired Loss (₹)", "Profit (₹)"],
+        ["Profit %"]
+      );
+      XLSX.utils.book_append_sheet(wb, wsSum, "Profit_Inventory_Summary");
+
+      const stamp = new Date().toISOString().slice(0,10);
+      XLSX.writeFile(wb, `MedShop_Reports_${stamp}.xlsx`);
+    } catch (err) {
+      console.error("Excel export error:", err);
+      alert("Could not generate Excel file. Check console for details.");
+    }
+  });
+
+})();
+</script>
+
+{% endblock %}
