@@ -1,4 +1,4 @@
-**DEPLOYMENT LINK ->** [Click Here](https://med-stock.onrender.com)
+**DEPLOYMENT LINK ->** [MED_STOCK](https://med-stock.onrender.com)
 # 🩺 MedShop Tracker
 
 > A full-stack **Django + Tailwind CSS** web app to manage a medical shop’s inventory, transactions, and analytics — built for speed, accuracy, and simplicity.
@@ -78,7 +78,7 @@ medshop-tracker/
 **For making Any Changes**
 ```
 git add .
-git commit -m "Fixed navbar visibility on mobile and updated reports"
+git commit -m "final shot"
 git push
 ```
 
