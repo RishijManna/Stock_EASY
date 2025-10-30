@@ -1,38 +1,34 @@
 from pathlib import Path
 import os
 
-try:
-    import dj_database_url  # for Render PostgreSQL
-except Exception:
-    dj_database_url = None
-
+# ------------------------------------------------------------
+# Base
+# ------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# -------------------------------------------------------------------
-# CORE SETTINGS
-# -------------------------------------------------------------------
-SECRET_KEY = os.getenv("SECRET_KEY", "replace-me-in-production")
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+# Keep this ONLY for local dev fallback; in production set via env
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-not-secret-change-me")
+
+# In Render you should set DEBUG=False (env var)
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
-    h.strip() for h in os.getenv(
-        "ALLOWED_HOSTS",
-        ".onrender.com,localhost,127.0.0.1"
-    ).split(",") if h.strip()
+    "localhost",
+    "127.0.0.1",
+    # Render domains
+    "med-stock.onrender.com",
+    ".onrender.com",
 ]
 
+# Important for Django 4+/5+ behind proxies (Render)
 CSRF_TRUSTED_ORIGINS = [
-    o.strip() for o in os.getenv(
-        "CSRF_TRUSTED_ORIGINS",
-        "https://*.onrender.com"
-    ).split(",") if o.strip()
+    "https://med-stock.onrender.com",
+    "https://*.onrender.com",
 ]
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# -------------------------------------------------------------------
-# APPLICATIONS
-# -------------------------------------------------------------------
+# ------------------------------------------------------------
+# Applications
+# ------------------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,24 +36,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.humanize",
 
-    # Project apps
-    "accounts",
+    # Your apps
     "inventory",
+    "accounts",
     "reports",
 ]
 
-# Optional Cloudinary integration
-if os.getenv("CLOUDINARY_URL"):
-    INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
-
-# -------------------------------------------------------------------
-# MIDDLEWARE
-# -------------------------------------------------------------------
+# ------------------------------------------------------------
+# Middleware
+# ------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # static files
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # serve static files in prod
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -86,77 +77,76 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "medshop.wsgi.application"
 
-# -------------------------------------------------------------------
-# DATABASE (SQLite local / Postgres Render)
-# -------------------------------------------------------------------
-if os.getenv("DATABASE_URL") and dj_database_url:
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=os.getenv("DATABASE_URL"),
-            conn_max_age=600,
-            ssl_require=True,
-        )
-    }
-else:
+# ------------------------------------------------------------
+# Database
+#  - Dev: SQLite
+#  - Prod: REQUIRE DATABASE_URL (PostgreSQL on Render)
+# ------------------------------------------------------------
+try:
+    import dj_database_url
+except Exception:
+    dj_database_url = None
+
+if DEBUG:
+    # Local development: SQLite is fine
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+else:
+    # Production: refuse to start without DATABASE_URL
+    db_url = os.getenv("DATABASE_URL")
+    if not (db_url and dj_database_url):
+        raise RuntimeError(
+            "DATABASE_URL missing (or dj_database_url not installed). "
+            "Set DATABASE_URL to your Render PostgreSQL External Connection string."
+        )
+    DATABASES = {
+        "default": dj_database_url.parse(db_url, conn_max_age=600, ssl_require=True)
+    }
 
-# -------------------------------------------------------------------
-# PASSWORD VALIDATION
-# -------------------------------------------------------------------
+# ------------------------------------------------------------
+# Password validation
+# ------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# -------------------------------------------------------------------
-# TIMEZONE / LANGUAGE
-# -------------------------------------------------------------------
+# ------------------------------------------------------------
+# I18N / TZ
+# ------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-# -------------------------------------------------------------------
-# STATIC & MEDIA (WhiteNoise)
-# -------------------------------------------------------------------
+# ------------------------------------------------------------
+# Static & Media
+# ------------------------------------------------------------
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # for collectstatic on Render
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
-STORAGES = {
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-}
-
-if os.getenv("CLOUDINARY_URL"):
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# Whitenoise optimized storage
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# -------------------------------------------------------------------
-# AUTH SETTINGS
-# -------------------------------------------------------------------
-LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "inventory:dashboard"
-LOGOUT_REDIRECT_URL = "accounts:login"
-
-# ✅ Removed duplicate-prone email backend for stability
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-]
-
-# -------------------------------------------------------------------
-# UPLOAD LIMITS
-# -------------------------------------------------------------------
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20 MB
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ------------------------------------------------------------
+# Security (safe defaults for prod; tweak as needed)
+# ------------------------------------------------------------
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24  # 1 day to start; raise after verifying HTTPS works
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
