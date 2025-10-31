@@ -53,7 +53,7 @@ textarea:focus {
       transparent 65%
     );
   /* ✅ use relative path so it works after collectstatic */
-  --bg-image-url: url("../img/abstract-bg.png");
+  --bg-image-url: url("../img/abstract.png");
 }
 
 @media (prefers-color-scheme: dark) {
@@ -104,5 +104,13 @@ textarea:focus {
   .surface {
     background: rgba(30,41,59,0.65); /* slightly dimmed dark mode surface */
     border-color: rgba(148,163,184,0.25);
+  }
+}
+footer {
+  background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(245,245,245,0.9) 100%);
+}
+@media (prefers-color-scheme: dark) {
+  footer {
+    background: linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.95) 100%);
   }
 }

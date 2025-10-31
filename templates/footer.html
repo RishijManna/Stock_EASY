@@ -1,0 +1,82 @@
+{% load tz %}
+
+<footer class="mt-16 border-t border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl"
+        aria-label="Site footer" itemscope itemtype="https://schema.org/Organization">
+  <meta itemprop="name" content="MedShop Tracker" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid gap-8 md:grid-cols-4 text-sm text-slate-600 dark:text-slate-300">
+
+    <!-- Brand & disclaimer -->
+    <div class="space-y-3">
+      <div class="flex items-center gap-2">
+        <div class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-bold">M</div>
+        <span class="font-semibold text-slate-800 dark:text-white tracking-tight">MedShop</span>
+      </div>
+      <p class="text-slate-500 dark:text-slate-400" itemprop="description">
+        Smart stock & billing for local pharmacies.
+      </p>
+
+      <div class="rounded-lg bg-amber-50/80 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200 p-3">
+        <p class="font-medium">Medical Emergency?</p>
+        <p class="text-xs">
+          This site does <strong>not</strong> handle emergencies. Call
+          <span class="font-semibold">108</span> / <span class="font-semibold">112</span> or visit the nearest hospital.
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <nav class="space-y-2" aria-label="Quick links">
+      <p class="uppercase tracking-wide text-xs text-slate-500">Quick Links</p>
+      <ul class="space-y-2">
+        <li><a href="/about/" class="hover:text-brand-600 transition-colors">About Us</a></li>
+        <li><a href="/returns/" class="hover:text-brand-600 transition-colors">Returns & Refunds</a></li>
+        <li><a href="/privacy/" class="hover:text-brand-600 transition-colors">Privacy Policy</a></li>
+        <li><a href="/terms/" class="hover:text-brand-600 transition-colors">Terms & Conditions</a></li>
+        <li><a href="/contact/" class="hover:text-brand-600 transition-colors">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Contact -->
+    <div class="space-y-2">
+      <p class="uppercase tracking-wide text-xs text-slate-500">Contact</p>
+      <p>
+        Phone:
+        <a href="tel:+91XXXXXXXXXX" class="hover:text-brand-600 transition-colors" itemprop="telephone">
+          +91-XXXXXXXXXX
+        </a>
+      </p>
+      <p>
+        Email:
+        <a href="mailto:support@medshop.example" class="hover:text-brand-600 transition-colors" itemprop="email">
+          support@medshop.example
+        </a>
+      </p>
+      <p class="text-slate-500 dark:text-slate-400">
+        Drug Licence No.: <span class="font-medium">DL-XXXX-YYYY</span>
+      </p>
+    </div>
+
+    <!-- Address & hours -->
+    <div class="space-y-2" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+      <p class="uppercase tracking-wide text-xs text-slate-500">Store</p>
+      <p>
+        <span itemprop="streetAddress">1st Floor, Medi-Complex</span><br>
+        <span itemprop="addressLocality">Kolkata</span>, <span itemprop="addressRegion">WB</span> —
+        <span itemprop="postalCode">700000</span>
+      </p>
+      <div>
+        <p class="uppercase tracking-wide text-xs text-slate-500 mt-3">Hours</p>
+        <p>Mon–Sat: 9:00 AM – 9:00 PM</p>
+        <p>Sun: 10:00 AM – 2:00 PM</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-slate-200 dark:border-slate-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+      <p>© {{ now|date:"Y" }} MedShop. All rights reserved.</p>
+      <p>Powered by Manna • Secure billing & inventory for pharmacies</p>
+    </div>
+  </div>
+</footer>

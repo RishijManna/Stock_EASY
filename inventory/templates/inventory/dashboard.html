@@ -1,34 +1,130 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="flex flex-col lg:flex-row gap-6">
-  <aside id="filterPane" class="lg:w-64 w-full lg:block hidden">
-    <div class="bg-white shadow rounded-xl p-4">
-      <h2 class="text-sm font-semibold text-slate-700">Expiry Overview <span class="text-slate-400">(Press Tab)</span></h2>
+
+<!-- ===============================
+     DASHBOARD HEADER
+================================ -->
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">Inventory Dashboard</h1>
+    <p class="text-slate-500 text-sm">Live overview of your medicines and expiry status.</p>
+  </div>
+
+  <!-- Mobile filter toggle -->
+  <button
+    type="button"
+    class="lg:hidden inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm hover:bg-slate-50 transition"
+    onclick="document.getElementById('mobileFilter').open = !document.getElementById('mobileFilter').open">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10m-7 6h4" />
+    </svg>
+    Filters
+  </button>
+</div>
+
+<!-- ===============================
+     MOBILE FILTER PANEL
+================================ -->
+<details id="mobileFilter" class="lg:hidden mb-4">
+  <summary class="list-none cursor-pointer">
+    <div class="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm text-slate-700 shadow-sm">
+      Expiry Overview
+      <span class="text-slate-400">(Tap to open)</span>
+    </div>
+  </summary>
+  <div class="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <h2 class="text-sm font-semibold text-slate-700">Expiry Overview</h2>
+    <ul class="mt-3 space-y-2 text-sm">
+      <li class="flex items-center justify-between">
+        <span>Expired</span>
+        <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-xs px-2 py-0.5">{{ expired_count }}</span>
+      </li>
+      <li class="flex items-center justify-between">
+        <span>Expiring ≤30d</span>
+        <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs px-2 py-0.5">{{ expiring_count }}</span>
+      </li>
+      <li class="flex items-center justify-between">
+        <span>OK</span>
+        <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5">{{ ok_count }}</span>
+      </li>
+    </ul>
+    <a href="{% url 'inventory:medicines' %}" class="mt-4 inline-flex text-sm text-brand-700 hover:underline">Open full list →</a>
+  </div>
+</details>
+
+<!-- ===============================
+     MAIN DASHBOARD GRID
+================================ -->
+<div class="grid gap-6 lg:grid-cols-[270px_minmax(0,1fr)_330px]">
+
+  <!-- ===== LEFT PANEL (Filter) ===== -->
+  <aside id="filterPane" class="hidden lg:block lg:sticky lg:top-20 self-start">
+    <div class="bg-white/90 backdrop-blur rounded-xl border border-slate-200 shadow-sm p-4">
+      <h2 class="text-sm font-semibold text-slate-700">Expiry Overview</h2>
       <ul class="mt-3 space-y-2 text-sm">
-        <li class="flex items-center justify-between"><span>Expired</span><span class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-xs px-2 py-0.5">{{ expired_count }}</span></li>
-        <li class="flex items-center justify-between"><span>Expiring ≤30d</span><span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs px-2 py-0.5">{{ expiring_count }}</span></li>
-        <li class="flex items-center justify-between"><span>OK</span><span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5">{{ ok_count }}</span></li>
+        <li class="flex items-center justify-between">
+          <span>Expired</span>
+          <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-xs px-2 py-0.5">{{ expired_count }}</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span>Expiring ≤30d</span>
+          <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs px-2 py-0.5">{{ expiring_count }}</span>
+        </li>
+        <li class="flex items-center justify-between">
+          <span>OK</span>
+          <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5">{{ ok_count }}</span>
+        </li>
       </ul>
       <a href="{% url 'inventory:medicines' %}" class="mt-4 inline-flex text-sm text-brand-700 hover:underline">Open full list →</a>
     </div>
   </aside>
 
-  <section class="flex-1">
+  <!-- ===== CENTER PANEL (Search + List) ===== -->
+  <section class="min-w-0 flex flex-col">
+    <!-- Search bar -->
     <form class="flex gap-2 mb-4" method="get">
-      <input class="w-full rounded-lg border-slate-300 focus:border-brand-500 focus:ring-brand-500" type="search" name="q" value="{{ q }}" placeholder="Search by name or ID" />
-      <button class="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-white hover:bg-brand-700">Search</button>
+      <input
+        type="search"
+        name="q"
+        value="{{ q }}"
+        placeholder="Search by medicine name or ID"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 outline-none"
+      />
+      <button
+        class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 transition">
+        Search
+      </button>
     </form>
 
-   <div id="medList" class="bg-white shadow rounded-xl divide-y">
-  {% include 'inventory/_med_list.html' with meds=meds %}
-</div>
+    <!-- Medicine list card -->
+    <div class="flex-1 bg-white/90 backdrop-blur rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+        <h3 class="text-sm font-medium text-slate-700">Medicines</h3>
+        <span class="text-xs text-slate-400">Total: {{ meds|length }}</span>
+      </div>
 
+      <div id="medList" class="max-h-[70vh] overflow-y-auto divide-y divide-slate-100">
+        {% include 'inventory/_med_list.html' with meds=meds %}
+      </div>
+
+      {% if not meds %}
+      <div class="px-4 py-8 text-center text-sm text-slate-500">No medicines found.</div>
+      {% endif %}
+    </div>
   </section>
 
-  <aside class="lg:w-80 w-full">
-    <div id="detailPane" class="bg-white shadow rounded-xl min-h-[240px]">
-      <div class="p-4 text-slate-500">Click a medicine to see details here.</div>
+  <!-- ===== RIGHT PANEL (Details) ===== -->
+  <aside class="lg:sticky lg:top-20 self-start">
+    <div id="detailPane"
+         class="bg-white/90 backdrop-blur rounded-xl border border-slate-200 shadow-sm min-h-[260px] flex items-center justify-center text-center p-6 text-slate-500">
+      <div>
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-2 h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4" />
+        </svg>
+        <p class="text-sm">Select a medicine to see its details here.</p>
+      </div>
     </div>
   </aside>
+
 </div>
 {% endblock %}
