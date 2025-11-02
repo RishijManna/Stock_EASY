@@ -78,6 +78,25 @@
     </div>
   </div>
 
+  <!-- Profit per Day: GitHub-style calendar heatmap -->
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit per Day (last 52 weeks)</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">darker ⇒ higher profit</span>
+    </div>
+    <div id="profitCal" class="overflow-x-auto flex justify-center px-1 py-1"></div>
+
+    <div class="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+      <span>Low</span>
+      <span class="inline-block w-3 h-3 rounded" style="background:#ebedf0"></span>
+      <span class="inline-block w-3 h-3 rounded" style="background:#9be9a8"></span>
+      <span class="inline-block w-3 h-3 rounded" style="background:#40c463"></span>
+      <span class="inline-block w-3 h-3 rounded" style="background:#30a14e"></span>
+      <span class="inline-block w-3 h-3 rounded" style="background:#216e39"></span>
+      <span>High</span>
+    </div>
+  </div>
+
   <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Weekly Bought vs Sold</h2>
@@ -96,79 +115,72 @@
       <div id="plProfit" style="height:260px;"></div>
     </div>
   </div>
-  <!-- === Advanced Visuals (add-on) ===================================== -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-  <!-- 7-day Rolling Revenue -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue (7-day Rolling Avg)</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">derived from daily revenue</span>
+
+  <!-- === Advanced Visuals ============================================ -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue (7-day Rolling Avg)</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">derived from daily revenue</span>
+      </div>
+      <div id="plRevRolling" style="height:220px;"></div>
     </div>
-    <div id="plRevRolling" style="height:220px;"></div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Cumulative Revenue</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">from Jan 2025</span>
+      </div>
+      <div id="plRevCum" style="height:220px;"></div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue by Weekday</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">Mon–Sun</span>
+      </div>
+      <div id="plRevWeekday" style="height:220px;"></div>
+    </div>
   </div>
 
-  <!-- Cumulative Revenue -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Cumulative Revenue</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">from Jan 2025</span>
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Sell-through % (Weekly)</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">Sold ÷ (Bought + Sold)</span>
+      </div>
+      <div id="plSellThrough" style="height:260px;"></div>
     </div>
-    <div id="plRevCum" style="height:220px;"></div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit Distribution (per Medicine)</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">histogram</span>
+      </div>
+      <div id="plProfitHist" style="height:260px;"></div>
+    </div>
   </div>
 
-  <!-- Revenue by Weekday -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Revenue by Weekday</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">Mon–Sun</span>
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Inventory Treemap (Remaining Qty)</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">by medicine</span>
+      </div>
+      <div id="plInvTreemap" style="height:340px;"></div>
     </div>
-    <div id="plRevWeekday" style="height:220px;"></div>
-  </div>
-</div>
 
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-  <!-- Weekly Sell-through % -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Sell-through % (Weekly)</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">Sold ÷ (Bought + Sold)</span>
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit vs Remaining</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">join of profit & inventory</span>
+      </div>
+      <div id="plProfitVsInv" style="height:340px;"></div>
     </div>
-    <div id="plSellThrough" style="height:260px;"></div>
   </div>
+  <!-- =================================================================== -->
 
-  <!-- Profit Distribution -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit Distribution (per Medicine)</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">histogram</span>
-    </div>
-    <div id="plProfitHist" style="height:260px;"></div>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-  <!-- Inventory Treemap -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Inventory Treemap (Remaining Qty)</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">by medicine</span>
-    </div>
-    <div id="plInvTreemap" style="height:340px;"></div>
-  </div>
-
-  <!-- Profit vs Remaining (Scatter) -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200">Profit vs Remaining</h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">join of profit & inventory</span>
-    </div>
-    <div id="plProfitVsInv" style="height:340px;"></div>
-  </div>
-</div>
-<!-- =================================================================== -->
-
-
-  <!-- Recent transactions table (unchanged) -->
+  <!-- Recent transactions table -->
   <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-2 sm:p-4">
     <div class="flex items-center justify-between mb-3">
       <div>
@@ -220,7 +232,7 @@
     </div>
   </div>
 
-  <!-- Profit table (unchanged) -->
+  <!-- Profit table -->
   <div class="bg-white dark:bg-slate-900 rounded-2xl shadow p-2 sm:p-4">
     <h2 class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-3">Profit / Inventory Summary</h2>
     <div class="overflow-x-auto">
@@ -262,24 +274,26 @@
   </div>
 </div>
 
-{# Pass data to JS safely #}
+{# Pass data to JS safely (add the two blobs for heatmap + Excel) #}
 {{ revenue_timeseries|json_script:"pl_revenue" }}
 {{ top_medicines|json_script:"pl_top" }}
 {{ expiry_pie|json_script:"pl_expiry" }}
 {{ weekly_bought_sold|json_script:"pl_weekly" }}
 {{ inv_by_medicine|json_script:"pl_inv" }}
 {{ profit_by_medicine|json_script:"pl_profit" }}
+{{ all_transactions|json_script:"pl_txn_all" }}
+{{ summary_rows|json_script:"pl_summary_all" }}
 
-<!-- Plotly -->
+<!-- Plotly & XLSX -->
 <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
+// @ts-nocheck
 (function () {
   const dark = document.documentElement.classList.contains('dark');
-  const MIN_DATE = '2025-01-01'; // anchor from Jan 2025
+  const MIN_DATE = '2025-01-01';
   const TODAY = new Date().toISOString().slice(0, 10);
-
 
   const layoutBase = {
     margin: { l: 40, r: 10, t: 10, b: 40 },
@@ -291,14 +305,13 @@
     hovermode: 'x unified'
   };
 
-   const read = (id, fallback) => {
+  const read = (id, fallback) => {
     const el = document.getElementById(id);
     if (!el) return fallback;
     try { return JSON.parse(el.textContent); } catch { return fallback; }
   };
 
-
-  // ---------- Load datasets ----------
+  // Datasets
   const rev = read('pl_revenue', []);
   const top = read('pl_top', []);
   const ex  = read('pl_expiry', {expired:0, expiring_30d:0, ok:0});
@@ -306,141 +319,62 @@
   const inv = read('pl_inv', []);
   const pf  = read('pl_profit', []);
 
-  // ---------- Revenue line (date axis from Jan 2025) ----------
+  // Revenue line
   if (document.getElementById('plRevenue')) {
-    // Parse & sanitize
     const xDates = rev.map(d => new Date(d.date)).filter(d => !isNaN(d));
     const yVals  = rev.map(d => Number(d.revenue) || 0);
-
-    Plotly.newPlot(
-      'plRevenue',
-      [{
-        type: 'scatter',
-        mode: 'lines',
-        name: 'Revenue',
-        x: xDates,        // pass Date objects, not raw strings
-        y: yVals,
-        line: { width: 2 }
-      }],
-      {
-        ...layoutBase,
-        xaxis: {
-          ...layoutBase.xaxis,
-          type: 'date',
-          range: [MIN_DATE, TODAY],  // always start from Jan 2025 to today
-          rangeselector: null,
-          rangeslider: { visible: false }
-        },
-        yaxis: { ...layoutBase.yaxis, tickprefix: '₹', rangemode: 'tozero' }
-      },
-      { responsive: true }
-    );
+    Plotly.newPlot('plRevenue',[{type:'scatter',mode:'lines',name:'Revenue',x:xDates,y:yVals,line:{width:2}}],
+      { ...layoutBase, xaxis:{...layoutBase.xaxis,type:'date',range:[MIN_DATE, TODAY],rangeslider:{visible:false}},
+        yaxis:{...layoutBase.yaxis,tickprefix:'₹',rangemode:'tozero'}},{responsive:true});
   }
 
-  // ---------- Top medicines (category axis) ----------
+  // Top medicines
   if (top.length && document.getElementById('plTopMeds')) {
-    Plotly.newPlot(
-      'plTopMeds',
-      [{
-        type: 'bar', name: 'Qty Sold',
-        x: top.map(d => d.name),
-        y: top.map(d => d.qty_sold)
-      }],
-      {
-        ...layoutBase,
-        xaxis: { type: 'category', categoryorder: 'total descending' }
-      },
-      { responsive: true }
-    );
+    Plotly.newPlot('plTopMeds',[{type:'bar',name:'Qty Sold',x:top.map(d=>d.name),y:top.map(d=>d.qty_sold)}],
+      { ...layoutBase, xaxis:{type:'category',categoryorder:'total descending'}},{responsive:true});
   }
 
-  // ---------- Expiry pie ----------
+  // Expiry pie
   if (document.getElementById('plExpiry')) {
-    Plotly.newPlot(
-      'plExpiry',
-      [{
-        type: 'pie',
-        labels: ['Expired', 'Expiring ≤30d', 'OK'],
-        values: [ex.expired || 0, ex.expiring_30d || 0, ex.ok || 0],
-        hole: 0.35
-      }],
-      { ...layoutBase, showlegend: true },
-      { responsive: true }
-    );
+    Plotly.newPlot('plExpiry',[{type:'pie',labels:['Expired','Expiring ≤30d','OK'],values:[ex.expired||0,ex.expiring_30d||0,ex.ok||0],hole:0.35}],
+      { ...layoutBase, showlegend:true },{responsive:true});
   }
 
+  // Weekly bought vs sold
+  if (wk.length && document.getElementById('plWeekly')) {
+    Plotly.newPlot('plWeekly',
+      [{type:'bar',name:'Bought',x:wk.map(d=>d.week),y:wk.map(d=>d.bought)},
+       {type:'bar',name:'Sold',  x:wk.map(d=>d.week),y:wk.map(d=>d.sold)}],
+      { ...layoutBase, barmode:'group', xaxis:{type:'category'}},{responsive:true});
+  }
 
-// ---------- Weekly bought vs sold (category axis; grouped bars) ----------
-if (wk.length && document.getElementById('plWeekly')) {
-  Plotly.newPlot(
-    'plWeekly',
-    [
-      { type: 'bar', name: 'Bought', x: wk.map(d => d.week), y: wk.map(d => d.bought) },
-      { type: 'bar', name: 'Sold',   x: wk.map(d => d.week), y: wk.map(d => d.sold) }
-    ],
-    {
-      ...layoutBase,
-      barmode: 'group',          // <-- was 'stack'
-      xaxis: { type: 'category' }
-    },
-    { responsive: true }
-  );
-}
-
-
-  // ---------- Inventory remaining (category axis) ----------
+  // Inventory remaining
   if (inv.length && document.getElementById('plInv')) {
-    const names = inv.map(d => d.name);
-    Plotly.newPlot(
-      'plInv',
-      [{
-        type: 'bar', name: 'Remaining',
-        x: names,
-        y: inv.map(d => d.remaining)
-      }],
-      {
-        ...layoutBase,
-        xaxis: { type: 'category', categoryorder: 'array', categoryarray: names }
-      },
-      { responsive: true }
-    );
+    const names = inv.map(d=>d.name);
+    Plotly.newPlot('plInv',[{type:'bar',name:'Remaining',x:names,y:inv.map(d=>d.remaining)}],
+      { ...layoutBase, xaxis:{type:'category',categoryorder:'array',categoryarray:names}},{responsive:true});
   }
 
-  // ---------- Profit by medicine (category axis; allow negatives) ----------
+  // Profit by medicine
   if (pf.length && document.getElementById('plProfit')) {
-    const names = pf.map(d => d.name);
-    Plotly.newPlot(
-      'plProfit',
-      [{
-        type: 'bar', name: 'Profit',
-        x: names,
-        y: pf.map(d => d.profit)
-      }],
-      {
-        ...layoutBase,
-        xaxis: { type: 'category', categoryorder: 'array', categoryarray: names },
-        yaxis: { ...layoutBase.yaxis, zeroline: true, zerolinecolor: '#94a3b8' }
-      },
-      { responsive: true }
-    );
+    const names = pf.map(d=>d.name);
+    Plotly.newPlot('plProfit',[{type:'bar',name:'Profit',x:names,y:pf.map(d=>d.profit)}],
+      { ...layoutBase, xaxis:{type:'category',categoryorder:'array',categoryarray:names},
+        yaxis:{...layoutBase.yaxis,zeroline:true,zerolinecolor:'#94a3b8'}},{responsive:true});
   }
-    // ===== Helpers for derived series ==================================
-  const toISODateOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const sortByDate = (arr, key) =>
-    [...arr].map(v => ({...v, _dt: new Date(v[key])}))
-            .filter(v => !isNaN(v._dt))
-            .sort((a,b) => a._dt - b._dt);
 
-  // Build daily series (fill missing dates with 0 so rolling/cumulative look clean)
+  // Helpers
+  const sortByDate = (arr, key) =>
+    [...arr].map(v => ({...v, _dt: new Date(v[key])})).filter(v => !isNaN(v._dt)).sort((a,b)=>a._dt-b._dt);
+
   const buildDailySeries = (rows) => {
     if (!rows?.length) return { dates: [], values: [] };
     const sorted = sortByDate(rows, 'date');
     const start = new Date(MIN_DATE);
     const end = new Date(TODAY);
     const map = new Map(sorted.map(r => [new Date(r.date).toDateString(), Number(r.revenue)||0]));
-    const dates = [];
-    const values = [];
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    const dates = [], values = [];
+    for (let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) {
       dates.push(new Date(d));
       values.push(map.get(d.toDateString()) || 0);
     }
@@ -448,214 +382,211 @@ if (wk.length && document.getElementById('plWeekly')) {
   };
 
   const rollingAvg = (values, w=7) => {
-    const out = [];
-    let run = 0;
-    for (let i=0;i<values.length;i++){
-      run += values[i];
-      if (i>=w) run -= values[i-w];
-      out.push( i>=w-1 ? run/w : null ); // null keeps Plotly gap for first (w-1) days
-    }
+    const out=[], n=values.length; let run=0;
+    for (let i=0;i<n;i++){ run+=values[i]; if(i>=w) run-=values[i-w]; out.push(i>=w-1?run/w:null); }
     return out;
   };
+  const cumulative = (values) => { let c=0; return values.map(v=> c += (Number(v)||0)); };
 
-  const cumulative = (values) => {
-    let c = 0; return values.map(v => (c += (Number(v)||0)));
-  };
-
-  // ===== 7-day Rolling Revenue =======================================
+  // Rolling
   if (document.getElementById('plRevRolling') && rev?.length){
     const { dates, values } = buildDailySeries(rev);
-    Plotly.newPlot(
-      'plRevRolling',
-      [{ type:'scatter', mode:'lines', name:'7-day Avg', x:dates, y:rollingAvg(values, 7), line:{ width:2 } }],
-      {
-        ...layoutBase,
-        xaxis:{ ...layoutBase.xaxis, type:'date', range:[MIN_DATE, TODAY] },
-        yaxis:{ ...layoutBase.yaxis, tickprefix:'₹', rangemode:'tozero' }
-      },
-      { responsive:true }
-    );
+    Plotly.newPlot('plRevRolling',
+      [{type:'scatter',mode:'lines',name:'7-day Avg',x:dates,y:rollingAvg(values,7),line:{width:2}}],
+      { ...layoutBase, xaxis:{...layoutBase.xaxis,type:'date',range:[MIN_DATE, TODAY]}, yaxis:{...layoutBase.yaxis,tickprefix:'₹',rangemode:'tozero'}},
+      {responsive:true});
   }
 
-  // ===== Cumulative Revenue ==========================================
+  // Cumulative
   if (document.getElementById('plRevCum') && rev?.length){
     const { dates, values } = buildDailySeries(rev);
-    Plotly.newPlot(
-      'plRevCum',
-      [{ type:'scatter', mode:'lines', fill:'tozeroy', name:'Cumulative', x:dates, y:cumulative(values), line:{ width:2 } }],
-      {
-        ...layoutBase,
-        xaxis:{ ...layoutBase.xaxis, type:'date', range:[MIN_DATE, TODAY] },
-        yaxis:{ ...layoutBase.yaxis, tickprefix:'₹', rangemode:'tozero' }
-      },
-      { responsive:true }
-    );
+    Plotly.newPlot('plRevCum',
+      [{type:'scatter',mode:'lines',fill:'tozeroy',name:'Cumulative',x:dates,y:cumulative(values),line:{width:2}}],
+      { ...layoutBase, xaxis:{...layoutBase.xaxis,type:'date',range:[MIN_DATE, TODAY]}, yaxis:{...layoutBase.yaxis,tickprefix:'₹',rangemode:'tozero'}},
+      {responsive:true});
   }
 
-  // ===== Revenue by Weekday (Mon..Sun) ================================
+  // Weekday revenue
   if (document.getElementById('plRevWeekday') && rev?.length){
     const weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const sums = new Array(7).fill(0);
-    const counts = new Array(7).fill(0);
     rev.forEach(r => {
-      const d = new Date(r.date); if (isNaN(d)) return;
-      // JS getDay(): 0=Sun..6=Sat → remap to 0=Mon..6=Sun
-      const js = d.getDay();
-      const idx = (js === 0) ? 6 : js - 1;
-      sums[idx] += Number(r.revenue)||0;
-      counts[idx] += 1;
+      const d=new Date(r.date); if(isNaN(d)) return;
+      const js=d.getDay(); const idx=(js===0)?6:js-1;
+      sums[idx]+=Number(r.revenue)||0;
     });
-    Plotly.newPlot(
-      'plRevWeekday',
-      [{ type:'bar', x:weekdays, y:sums }],
-      { ...layoutBase, yaxis:{ ...layoutBase.yaxis, tickprefix:'₹' } },
-      { responsive:true }
-    );
+    Plotly.newPlot('plRevWeekday',[{type:'bar',x:weekdays,y:sums}],
+      { ...layoutBase, yaxis:{...layoutBase.yaxis,tickprefix:'₹'}},{responsive:true});
   }
 
-  // ===== Sell-through % from weekly (Sold ÷ (Bought+Sold)) ===========
-  if (document.getElementById('plSellThrough') && wk?.length){
-    const weeks = wk.map(d => d.week);
-    const pct = wk.map(d => {
-      const b = Number(d.bought)||0, s = Number(d.sold)||0;
-      const denom = b + s;
-      return denom > 0 ? (s/denom)*100 : null;
-    });
-    Plotly.newPlot(
-      'plSellThrough',
-      [{ type:'scatter', mode:'lines+markers', name:'Sell-through %', x:weeks, y:pct }],
-      {
-        ...layoutBase,
-        xaxis:{ ...layoutBase.xaxis, type:'category' },
-        yaxis:{ ...layoutBase.yaxis, rangemode:'tozero', ticksuffix:'%' }
-      },
-      { responsive:true }
-    );
+  // Profit histogram with labels
+  if (document.getElementById('plProfitHist') && pf?.length) {
+    const names = pf.map(d => String(d.name));
+    const profits = pf.map(d => Number(d.profit) || 0);
+    Plotly.newPlot('plProfitHist',[
+      {type:'histogram',x:profits,nbinsx:20,name:'Profit bins',marker:{opacity:0.6},hoverinfo:'skip'},
+      {type:'scatter',mode:'markers',x:profits,y:profits.map(()=>0),
+       text:names.map((n,i)=>`${n}<br>Profit: ₹${profits[i].toFixed(2)}`),
+       hovertemplate:'%{text}<extra></extra>',
+       marker:{size:8,color:dark?'#ffffff':'#000000',opacity:1,line:{width:1,color:dark?'#e2e8f0':'#1e293b'}},name:'Medicines'}],
+      { ...layoutBase, xaxis:{...layoutBase.xaxis,title:'Profit (₹)'}, yaxis:{...layoutBase.yaxis,visible:false},
+        showlegend:false, margin:{l:40,r:10,t:10,b:40}, hoverlabel:{font:{color:'#ffffff',size:13}} },
+      {responsive:true});
   }
 
- // ===== Profit Distribution (per Medicine, white hover text) ==========
-if (document.getElementById('plProfitHist') && pf?.length) {
-  const names = pf.map(d => String(d.name));
-  const profits = pf.map(d => Number(d.profit) || 0);
-
-  Plotly.newPlot(
-    'plProfitHist',
-    [
-      // Histogram layer
-      {
-        type: 'histogram',
-        x: profits,
-        nbinsx: 20,
-        name: 'Profit bins',
-        marker: { opacity: 0.6 },
-        hoverinfo: 'skip', // disable default bin hover
-      },
-      // Scatter layer for hover names
-      {
-        type: 'scatter',
-        mode: 'markers',
-        x: profits,
-        y: profits.map(() => 0),
-        text: names.map(
-          (n, i) => `${n}<br>Profit: ₹${profits[i].toFixed(2)}`
-        ),
-        hovertemplate: '%{text}<extra></extra>',
-        marker: {
-          size: 8,
-          color: dark ? '#ffffff' : '#000000', // white in dark mode, black in light mode
-          opacity: 1,
-          line: { width: 1, color: dark ? '#e2e8f0' : '#1e293b' },
-        },
-        name: 'Medicines',
-      },
-    ],
-    {
-      ...layoutBase,
-      xaxis: { ...layoutBase.xaxis, title: 'Profit (₹)' },
-      yaxis: { ...layoutBase.yaxis, visible: false },
-      showlegend: false,
-      margin: { l: 40, r: 10, t: 10, b: 40 },
-      hoverlabel: {
-        
-        font: { color: '#ffffff', size: 13 }, // white hover text for all
-      },
-    },
-    { responsive: true }
-  );
-}
-
-
-  // ===== Inventory Treemap (Remaining by medicine) ====================
+  // Treemap
   if (document.getElementById('plInvTreemap') && inv?.length){
     const labels = inv.map(d => d.name);
     const values = inv.map(d => Number(d.remaining)||0);
-    Plotly.newPlot(
-      'plInvTreemap',
-      [{ type:'treemap', labels, parents: labels.map(_ => ''), values, branchvalues:'total' }],
-      { ...layoutBase },
-      { responsive:true }
-    );
+    Plotly.newPlot('plInvTreemap',[{type:'treemap',labels,parents:labels.map(_=>''),values,branchvalues:'total'}],
+      { ...layoutBase },{responsive:true});
   }
 
-  // ===== Profit vs Remaining (join inv + pf by name) ==================
+  // Profit vs Remaining
   if (document.getElementById('plProfitVsInv') && inv?.length && pf?.length){
     const profitMap = new Map(pf.map(d => [String(d.name), Number(d.profit)||0]));
-    const points = inv.map(d => ({
-      name: String(d.name),
-      remaining: Number(d.remaining)||0,
-      profit: profitMap.get(String(d.name)) ?? null
-    })).filter(p => p.profit !== null);
-
-    Plotly.newPlot(
-      'plProfitVsInv',
-      [{
-        type:'scatter',
-        mode:'markers',
-        x: points.map(p => p.remaining),
-        y: points.map(p => p.profit),
-        text: points.map(p => p.name),
-        hovertemplate: '%{text}<br>Remaining: %{x}<br>Profit: ₹%{y:.2f}<extra></extra>',
-        marker:{ size: 10, opacity: 0.85 }
-      }],
-      {
-        ...layoutBase,
-        xaxis:{ ...layoutBase.xaxis, title:'Remaining Qty', rangemode:'tozero' },
-        yaxis:{ ...layoutBase.yaxis, title:'Profit (₹)', zeroline:true, zerolinecolor: dark ? '#94a3b8' : '#94a3b8' }
-      },
-      { responsive:true }
-    );
+    const points = inv.map(d => ({name:String(d.name),remaining:Number(d.remaining)||0,profit:profitMap.get(String(d.name)) ?? null}))
+                      .filter(p => p.profit !== null);
+    Plotly.newPlot('plProfitVsInv',[{type:'scatter',mode:'markers',
+      x:points.map(p=>p.remaining),y:points.map(p=>p.profit),text:points.map(p=>p.name),
+      hovertemplate:'%{text}<br>Remaining: %{x}<br>Profit: ₹%{y:.2f}<extra></extra>', marker:{size:10,opacity:0.85}}],
+      { ...layoutBase, xaxis:{...layoutBase.xaxis,title:'Remaining Qty',rangemode:'tozero'},
+        yaxis:{...layoutBase.yaxis,title:'Profit (₹)',zeroline:true,zerolinecolor:'#94a3b8'}},
+      {responsive:true});
   }
 
-  // ===== Optional: Extra CSV exports for the new derived series =======
-  const exportBtn = document.getElementById('btn-export');
-  if (exportBtn){
-    const _old = exportBtn.onclick; // keep your current listener added earlier (you used addEventListener)
-    exportBtn.addEventListener('click', () => {
-      // Rolling & cumulative
-      if (rev?.length){
-        const { dates, values } = buildDailySeries(rev);
-        const roll = rollingAvg(values, 7).map(v => v==null ? '' : v);
-        const cum  = cumulative(values);
-        const rowsRolling = dates.map((d,i)=>[d.toISOString().slice(0,10), roll[i]]);
-        const rowsCum     = dates.map((d,i)=>[d.toISOString().slice(0,10), cum[i]]);
-        // Reuse your existing exportCSV helper
-        exportCSV('revenue_rolling_7d.csv', ['date','rolling_7d'], rowsRolling);
-        exportCSV('revenue_cumulative.csv', ['date','cumulative'], rowsCum);
-      }
-      // Sell-through
-      if (wk?.length){
-        const rows = wk.map(d => {
-          const b = Number(d.bought)||0, s = Number(d.sold)||0, denom = b+s;
-          const pct = denom>0 ? (s/denom)*100 : '';
-          return [d.week, pct];
-        });
-        exportCSV('sellthrough_weekly.csv', ['week','sellthrough_pct'], rows);
-      }
-    });
+  // ======== Profit Calendar (GitHub-style — exact look) ===============
+  // ======== Profit Calendar (GitHub-style — centered & compact) ========
+(function buildProfitCalendar(){
+  const mount = document.getElementById('profitCal');
+  const ALL_TXN  = read('pl_txn_all', []) || [];
+  const ALL_SUMM = read('pl_summary_all', []) || [];
+  if (!mount) return;
+
+  // --- same profit logic (unchanged) ---
+  const avgCost = new Map();
+  ALL_SUMM.forEach(r => {
+    const sold = Number(r.sold)||0, cogs = Number(r.cogs)||0;
+    avgCost.set(String(r.medicine), sold > 0 ? (cogs / sold) : 0);
+  });
+
+  const profitByDate = new Map();
+  ALL_TXN.forEach(t => {
+    if (String(t.ttype||'').toUpperCase() !== 'SOLD') return;
+    const date = (t.created_at||'').slice(0,10); if (!date) return;
+    const unit = Number(t.unit_price)||0, qty = Number(t.quantity)||0;
+    const med  = String(t['medicine__name']||'');
+    const cost = avgCost.has(med) ? avgCost.get(med) : 0;
+    const margin = (unit - cost) * qty;
+    profitByDate.set(date, (profitByDate.get(date)||0) + margin);
+  });
+
+  // Range: last 52 weeks aligned to Sunday
+  const today = new Date();
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const start = new Date(end);
+  start.setDate(start.getDate() - 364);
+  start.setDate(start.getDate() - start.getDay()); // back to Sunday
+
+  const dates = [], vals = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    const key = d.toISOString().slice(0,10);
+    dates.push(new Date(d));
+    vals.push(Number(profitByDate.get(key)||0));
   }
 
+  const positiveMax = Math.max(0, ...vals.map(v => Math.max(0, v)));
+  const step = positiveMax > 0 ? positiveMax / 4 : 1;
+  const toLevel = v => (v <= 0 ? 0 : v <= step ? 1 : v <= step*2 ? 2 : v <= step*3 ? 3 : 4);
 
-  // ---------- Export multiple CSVs ----------
+  const dark = document.documentElement.classList.contains('dark');
+  const colorsLight = ['#ebedf0','#9be9a8','#40c463','#30a14e','#216e39'];
+  const colorsDark  = ['#0e1623','#0e4429','#006d32','#26a641','#39d353'];
+  const palette = dark ? colorsDark : colorsLight;
+
+  // --- COMPACT SPACING & CENTERING ---
+  const CELL = 11, GAP = 2;          // same cell size, small gap
+  const TOP  = 10;                    // was 18 → tighter
+  const LEFT = 18;                    // reduced left margin
+  const weeks = Math.ceil(dates.length / 7);
+
+  // Month labels (first week of each month)
+  const monthLabels = [];
+  for (let w = 0; w < weeks; w++) {
+    const d = new Date(start); d.setDate(d.getDate() + w*7);
+    const prev = new Date(d); prev.setDate(prev.getDate() - 7);
+    if (w === 0 || d.getMonth() !== prev.getMonth()) {
+      monthLabels.push({ week:w, label:d.toLocaleString('default',{ month:'short' }) });
+    }
+  }
+
+  // Build a snug SVG and CENTER it via flex parent
+  const width  = LEFT + weeks * (CELL + GAP);
+  const height = TOP + 7 * (CELL + GAP);
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // keep centered
+  svg.style.display = 'block';
+  svg.style.maxWidth = '100%';
+  svg.style.height = 'auto';
+
+  // Month labels (smaller)
+  monthLabels.forEach(m => {
+    const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x', LEFT + m.week*(CELL+GAP));
+    tx.setAttribute('y', 9);
+    tx.setAttribute('font-size', '9');
+    tx.setAttribute('fill', dark ? '#c9d1d9' : '#57606a');
+    tx.textContent = m.label;
+    svg.appendChild(tx);
+  });
+
+  // Weekday labels (Mon, Wed, Fri) – tight and aligned
+  [['Mon',1],['Wed',3],['Fri',5]].forEach(([label,row]) => {
+    const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x', 0);
+    tx.setAttribute('y', TOP + row*(CELL+GAP) + 8);
+    tx.setAttribute('font-size', '9');
+    tx.setAttribute('fill', dark ? '#8b949e' : '#57606a');
+    tx.textContent = label;
+    svg.appendChild(tx);
+  });
+
+  // Cells
+  let idx = 0;
+  for (let w = 0; w < weeks; w++) {
+    for (let dow = 0; dow < 7; dow++) {
+      const d = dates[idx]; if (!d) continue;
+      const v = vals[idx] || 0;
+      const lvl = toLevel(v);
+
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x', LEFT + w*(CELL+GAP));
+      rect.setAttribute('y', TOP  + dow*(CELL+GAP));
+      rect.setAttribute('width', CELL);
+      rect.setAttribute('height', CELL);
+      rect.setAttribute('rx', 2); rect.setAttribute('ry', 2);
+      rect.setAttribute('fill', palette[lvl]);
+      rect.setAttribute('stroke', dark ? '#0b1220' : '#ffffff');
+      rect.setAttribute('stroke-width', lvl === 0 ? 0.6 : 0);
+
+      const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+      title.textContent = `${d.toISOString().slice(0,10)}\nProfit: ₹${(v||0).toFixed(2)}`;
+      rect.appendChild(title);
+
+      svg.appendChild(rect);
+      idx++;
+    }
+  }
+
+  // Center inside the flex container and remove previous content
+  mount.innerHTML = '';
+  mount.appendChild(svg);
+})();
+
+
+  // CSV helpers
   const exportCSV = (filename, header, rows) => {
     const csv = [header, ...rows].map(r => r.map(v => (v ?? '')).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -666,24 +597,174 @@ if (document.getElementById('plProfitHist') && pf?.length) {
   };
 
   document.getElementById('btn-export')?.addEventListener('click', () => {
-    // 1) Revenue
     exportCSV('revenue_timeseries.csv', ['date','revenue'], rev.map(r => [r.date, r.revenue]));
-
-    // 2) Weekly Bought/Sold
     exportCSV('weekly_bought_sold.csv', ['week','bought_qty','sold_qty'], wk.map(r => [r.week, r.bought, r.sold]));
-
-    // 3) Top medicines
     exportCSV('top_medicines.csv', ['medicine','qty_sold'], top.map(r => [r.name, r.qty_sold]));
-
-    // 4) Inventory by medicine
     exportCSV('inventory_remaining.csv', ['medicine','remaining_qty'], inv.map(r => [r.name, r.remaining]));
-
-    // 5) Profit by medicine
     exportCSV('profit_by_medicine.csv', ['medicine','profit'], pf.map(r => [r.name, r.profit]));
   });
-    // === FULL DATA EXCEL EXPORT ======================================
-  const ALL_TXN  = read('pl_txn_all', []);
-  const ALL_SUMM = read('pl_summary_all', []);
+  // ===== Sell-through % from weekly (Sold ÷ (Bought+Sold)) =====
+if (document.getElementById('plSellThrough')) {
+  const weeks = (wk || []).map(d => d.week);
+  const points = (wk || []).map(d => {
+    const b = Number(d.bought) || 0;
+    const s = Number(d.sold)   || 0;
+    const denom = b + s;
+    return { week: d.week, pct: denom > 0 ? (s / denom) * 100 : null };
+  });
+
+  const valid = points.filter(p => Number.isFinite(p.pct));
+  if (valid.length) {
+    Plotly.newPlot(
+      'plSellThrough',
+      [{ type:'scatter', mode:'lines+markers', name:'Sell-through %',
+         x: valid.map(p => p.week), y: valid.map(p => p.pct) }],
+      { ...layoutBase, xaxis:{ ...layoutBase.xaxis, type:'category' },
+        yaxis:{ ...layoutBase.yaxis, rangemode:'tozero', ticksuffix:'%' } },
+      { responsive:true }
+    );
+  } else {
+    // draw a faint baseline + annotation so the card isn't empty
+    Plotly.newPlot(
+      'plSellThrough',
+      [{ type:'scatter', mode:'lines', x: weeks, y: weeks.map(() => 0), line:{ width:1, dash:'dot' }, hoverinfo:'skip', name:'No data' }],
+      { ...layoutBase,
+        xaxis:{ ...layoutBase.xaxis, type:'category' },
+        yaxis:{ ...layoutBase.yaxis, ticksuffix:'%', range:[0,100] },
+        annotations:[{
+          text:'No weekly sell-through data yet',
+          xref:'paper', yref:'paper', x:0.5, y:0.5, showarrow:false,
+          font:{ size:12, color: layoutBase.font.color }
+        }]},
+      { responsive:true }
+    );
+  }
+}
+// ======== Profit Calendar (GitHub-style — robust) ====================
+(function buildProfitCalendar(){
+  const mount = document.getElementById('profitCal');
+  const ALL_TXN  = read('pl_txn_all', []) || [];
+  const ALL_SUMM = read('pl_summary_all', []) || [];
+  if (!mount) return;
+
+  // Avg cost per unit per medicine; if summary missing, default to 0
+  const avgCost = new Map();
+  ALL_SUMM.forEach(r => {
+    const sold = Number(r.sold)||0, cogs = Number(r.cogs)||0;
+    avgCost.set(String(r.medicine), sold > 0 ? (cogs / sold) : 0);
+  });
+
+  // Daily profit from SOLD rows (if no data, stays empty → grid shows zeros)
+  const profitByDate = new Map();
+  ALL_TXN.forEach(t => {
+    if (String(t.ttype||'').toUpperCase() !== 'SOLD') return;
+    const date = (t.created_at||'').slice(0,10); if (!date) return;
+    const unit = Number(t.unit_price)||0, qty = Number(t.quantity)||0;
+    const med  = String(t['medicine__name']||'');
+    const cost = avgCost.has(med) ? avgCost.get(med) : 0;
+    const margin = (unit - cost) * qty;
+    profitByDate.set(date, (profitByDate.get(date)||0) + margin);
+  });
+
+  // Range: last 52 weeks aligned to Sunday
+  const today = new Date();
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const start = new Date(end); start.setDate(start.getDate() - 364);
+  start.setDate(start.getDate() - start.getDay()); // previous Sunday
+
+  const dates = [], vals = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    const key = d.toISOString().slice(0,10);
+    dates.push(new Date(d));
+    vals.push(Number(profitByDate.get(key)||0));
+  }
+
+  const positiveMax = Math.max(0, ...vals.map(v => Math.max(0, v)));
+  const step = positiveMax > 0 ? positiveMax / 4 : 1;
+  const toLevel = v => (v <= 0 ? 0 : v <= step ? 1 : v <= step*2 ? 2 : v <= step*3 ? 3 : 4);
+
+  // GitHub palette; make level-0 slightly CONTRASTY in dark mode
+  const dark = document.documentElement.classList.contains('dark');
+  const colorsLight = ['#ebedf0','#9be9a8','#40c463','#30a14e','#216e39'];
+  const colorsDark  = ['#0e1623','#0e4429','#006d32','#26a641','#39d353']; // level-0 darker-blue so it shows on your card
+  const palette = dark ? colorsDark : colorsLight;
+
+  const CELL = 11, GAP = 2, TOP = 18, LEFT = 28;
+  const weeks = Math.ceil(dates.length / 7);
+
+  // Month labels
+  const monthLabels = [];
+  for (let w = 0; w < weeks; w++) {
+    const d = new Date(start); d.setDate(d.getDate() + w*7); // Sunday column
+    const prev = new Date(d); prev.setDate(prev.getDate() - 7);
+    if (w === 0 || d.getMonth() !== prev.getMonth()) {
+      monthLabels.push({ week:w, label:d.toLocaleString('default',{month:'short'}) });
+    }
+  }
+
+  const width  = LEFT + weeks * (CELL + GAP);
+  const height = TOP + 7 * (CELL + GAP) + 6;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  // Month labels
+  monthLabels.forEach(m => {
+    const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x', LEFT + m.week*(CELL+GAP));
+    tx.setAttribute('y', 12);
+    tx.setAttribute('font-size', '10');
+    tx.setAttribute('fill', dark ? '#c9d1d9' : '#57606a');
+    tx.textContent = m.label;
+    svg.appendChild(tx);
+  });
+
+  // Weekday labels (Mon, Wed, Fri)
+  [['Mon',1],['Wed',3],['Fri',5]].forEach(([label,row]) => {
+    const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+    tx.setAttribute('x', 0);
+    tx.setAttribute('y', TOP + row*(CELL+GAP) + 8);
+    tx.setAttribute('font-size', '10');
+    tx.setAttribute('fill', dark ? '#8b949e' : '#57606a');
+    tx.textContent = label;
+    svg.appendChild(tx);
+  });
+
+  // Cells (Sun..Sat rows)
+  let idx = 0;
+  for (let w = 0; w < weeks; w++) {
+    for (let dow = 0; dow < 7; dow++) {
+      const d = dates[idx]; if (!d) continue;
+      const v = vals[idx] || 0, lvl = toLevel(v);
+
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x', LEFT + w*(CELL+GAP));
+      rect.setAttribute('y', TOP  + dow*(CELL+GAP));
+      rect.setAttribute('width', CELL);
+      rect.setAttribute('height', CELL);
+      rect.setAttribute('rx', 2); rect.setAttribute('ry', 2);
+      rect.setAttribute('fill', palette[lvl]);
+      rect.setAttribute('stroke', dark ? '#0b1220' : '#ffffff'); // make zero cells visible
+      rect.setAttribute('stroke-width', lvl === 0 ? 0.6 : 0);
+
+      const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+      title.textContent = `${d.toISOString().slice(0,10)}\nProfit: ₹${(v||0).toFixed(2)}`;
+      rect.appendChild(title);
+
+      svg.appendChild(rect);
+      idx++;
+    }
+  }
+
+  mount.innerHTML = '';
+  mount.appendChild(svg);
+})();
+
+
+  // === Excel export (full data) ======================================
+  const ALL_TXN_FOR_XLSX  = read('pl_txn_all', []);
+  const ALL_SUMM_FOR_XLSX = read('pl_summary_all', []);
 
   const money = v => (v == null ? null : Number(v));
   const percent = v => (v == null ? null : Number(v));
@@ -731,14 +812,12 @@ if (document.getElementById('plProfitHist') && pf?.length) {
     try {
       const wb = XLSX.utils.book_new();
 
-      // Sheet 1: Transactions
-      const wsTx = XLSX.utils.json_to_sheet(toTransactionRows(ALL_TXN));
+      const wsTx = XLSX.utils.json_to_sheet(toTransactionRows(ALL_TXN_FOR_XLSX));
       setColWidths(wsTx, [12,10,18,24,14,8,14]);
       applyNumberFormats(wsTx, ["Unit Price (₹)", "Total (₹)"], []);
       XLSX.utils.book_append_sheet(wb, wsTx, "Transactions");
 
-      // Sheet 2: Profit Summary
-      const wsSum = XLSX.utils.json_to_sheet(toSummaryRows(ALL_SUMM));
+      const wsSum = XLSX.utils.json_to_sheet(toSummaryRows(ALL_SUMM_FOR_XLSX));
       setColWidths(wsSum, [24,10,10,11,14,12,18,12,9]);
       applyNumberFormats(wsSum,
         ["Revenue (₹)", "COGS (₹)", "Expired Loss (₹)", "Profit (₹)"],

@@ -78,7 +78,7 @@ medshop-tracker/
 **For making Any Changes**
 ```
 git add .
-git commit -m "final shot"
+git commit -m "HEAT"
 git push
 ```
 

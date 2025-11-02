@@ -58,7 +58,6 @@
           {{ mform.exp_date|add_class:'border bg-white rounded-lg w-full' }}
         </div>
 
-        
       </div>
 
       <div class="pt-2">
@@ -143,11 +142,18 @@
         <th class="px-4 py-2 text-left">Quantity</th>
         <th class="px-4 py-2 text-left">Unit Price (₹)</th>
         <th class="px-4 py-2 text-left">Total (₹)</th>
+        <th class="px-4 py-2 text-left">Profit (₹)</th> <!-- NEW -->
       </tr>
     </thead>
     <tbody class="divide-y divide-slate-100">
       {% for t in txns %}
-      <tr class="hover:bg-slate-50">
+      <tr
+        class="hover:bg-slate-50"
+        data-ttype="{{ t.ttype }}"
+        data-unit="{{ t.unit_price|default_if_none:'0' }}"
+        data-qty="{{ t.quantity|default_if_none:'0' }}"
+        data-cost="{{ t.medicine.cost_price|default_if_none:'0' }}"
+      >
         <td class="px-4 py-2">{{ t.created_at|date:'Y-m-d H:i' }}</td>
         <td class="px-4 py-2">
           {% if t.ttype == 'BOUGHT' %}
@@ -161,10 +167,15 @@
         <td class="px-4 py-2">{{ t.quantity }}</td>
         <td class="px-4 py-2">₹{{ t.unit_price }}</td>
         <td class="px-4 py-2 font-semibold text-slate-900">₹{{ t.total_amount }}</td>
+        <!-- Profit cell filled & colored by JS -->
+        <td class="px-4 py-2">
+          <span class="inline-block profit-chip rounded-md px-2 py-0.5 text-sm font-medium"
+                title="Heat map by profit magnitude"></span>
+        </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="7" class="px-6 py-6 text-center text-slate-500">No transactions found.</td>
+        <td colspan="8" class="px-6 py-6 text-center text-slate-500">No transactions found.</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -185,6 +196,82 @@
       if (['id_unit_price', 'id_quantity'].includes(e.target.id)) calc();
     });
     document.addEventListener('DOMContentLoaded', calc);
+  })();
+</script>
+
+<!-- Profit heat map (frontend-only) -->
+<script>
+  (function () {
+    const rows = Array.from(document.querySelectorAll('tbody tr[data-ttype]'));
+    const profits = rows.map(r => {
+      const ttype = r.dataset.ttype || '';
+      const unit = parseFloat(r.dataset.unit || '0') || 0;
+      const qty  = parseFloat(r.dataset.qty  || '0') || 0;
+      const cost = parseFloat(r.dataset.cost || '0') || 0;
+
+      // SOLD → (unit - cost) * qty ; BOUGHT → -(cost * qty)
+      const profit = ttype === 'SOLD'
+        ? (unit - cost) * qty
+        : ttype === 'BOUGHT'
+          ? -(cost * qty)
+          : 0;
+
+      r.dataset.profit = profit.toString();
+      return profit;
+    });
+
+    if (!profits.length || profits.every(v => Math.abs(v) === 0)) {
+      rows.forEach(r => {
+        const chip = r.querySelector('.profit-chip');
+        if (chip) chip.textContent = '₹0.00';
+      });
+      return;
+    }
+
+    const maxAbs = Math.max(...profits.map(v => Math.abs(v))) || 1;
+
+    function colorFor(profit) {
+      const intensity = Math.min(Math.abs(profit) / maxAbs, 1);
+      const hue = profit >= 0 ? 120 : 0; // green vs red
+      const sat = 70;
+      const light = 95 - Math.round(intensity * 40); // 95% → 55%
+      return `hsl(${hue} ${sat}% ${light}%)`;
+    }
+
+    function textColorFor(lightness) {
+      return lightness <= 65 ? 'text-white' : 'text-slate-900';
+    }
+
+    rows.forEach(r => {
+      const chip = r.querySelector('.profit-chip');
+      if (!chip) return;
+      const profit = parseFloat(r.dataset.profit || '0') || 0;
+
+      const bg = colorFor(profit);
+      chip.style.background = bg;
+
+      const lMatch = bg.match(/hsl\(\d+\s+\d+%\s+(\d+)%\)/);
+      const lightness = lMatch ? parseInt(lMatch[1], 10) : 90;
+
+      chip.classList.remove('text-white', 'text-slate-900');
+      chip.classList.add(textColorFor(lightness));
+
+      chip.textContent = '₹' + profit.toFixed(2);
+      chip.setAttribute('aria-label', `Profit ₹${profit.toFixed(2)}`);
+    });
+
+    // Tiny legend
+    const legend = document.createElement('div');
+    legend.className = 'mt-2 mb-4 text-xs text-slate-500 flex items-center gap-2';
+    legend.innerHTML = `
+      <span class="inline-block rounded px-2 py-0.5" style="background:hsl(0 70% 60%);color:white">Loss</span>
+      <span class="inline-block rounded px-2 py-0.5" style="background:hsl(120 70% 60%);color:white">Profit</span>
+      <span>— deeper color = larger magnitude</span>
+    `;
+    const tableWrap = document.querySelector('.overflow-x-auto.bg-white.shadow.rounded-2xl.ring-1');
+    if (tableWrap && tableWrap.parentElement) {
+      tableWrap.parentElement.insertBefore(legend, tableWrap.nextSibling);
+    }
   })();
 </script>
 
