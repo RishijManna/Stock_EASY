@@ -293,7 +293,6 @@
 (function () {
   const dark = document.documentElement.classList.contains('dark');
   const MIN_DATE = '2025-01-01';
-  const TODAY = new Date().toISOString().slice(0, 10);
 
   const layoutBase = {
     margin: { l: 40, r: 10, t: 10, b: 40 },
@@ -304,6 +303,13 @@
     yaxis: { gridcolor: dark ? 'rgba(148,163,184,.2)' : 'rgba(100,116,139,.15)' },
     hovermode: 'x unified'
   };
+
+  // --- local-date helpers (avoid UTC off-by-one) ---
+  const pad2 = n => String(n).padStart(2, '0');
+  const ymdLocal = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+  // Use local "today" string
+  const TODAY = ymdLocal(new Date());
 
   const read = (id, fallback) => {
     const el = document.getElementById(id);
@@ -428,7 +434,7 @@
       {type:'scatter',mode:'markers',x:profits,y:profits.map(()=>0),
        text:names.map((n,i)=>`${n}<br>Profit: ₹${profits[i].toFixed(2)}`),
        hovertemplate:'%{text}<extra></extra>',
-       marker:{size:8,color:dark?'#ffffff':'#000000',opacity:1,line:{width:1,color:dark?'#e2e8f0':'#1e293b'}},name:'Medicines'}],
+       marker:{size:8,opacity:1,line:{width:1}},name:'Medicines'}],
       { ...layoutBase, xaxis:{...layoutBase.xaxis,title:'Profit (₹)'}, yaxis:{...layoutBase.yaxis,visible:false},
         showlegend:false, margin:{l:40,r:10,t:10,b:40}, hoverlabel:{font:{color:'#ffffff',size:13}} },
       {responsive:true});
@@ -455,7 +461,6 @@
       {responsive:true});
   }
 
-  // ======== Profit Calendar (GitHub-style — exact look) ===============
   // ======== Profit Calendar (GitHub-style — centered & compact) ========
 (function buildProfitCalendar(){
   const mount = document.getElementById('profitCal');
@@ -490,7 +495,7 @@
 
   const dates = [], vals = [];
   for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
-    const key = d.toISOString().slice(0,10);
+    const key = ymdLocal(d); // LOCAL key
     dates.push(new Date(d));
     vals.push(Number(profitByDate.get(key)||0));
   }
@@ -505,9 +510,9 @@
   const palette = dark ? colorsDark : colorsLight;
 
   // --- COMPACT SPACING & CENTERING ---
-  const CELL = 11, GAP = 2;          // same cell size, small gap
-  const TOP  = 10;                    // was 18 → tighter
-  const LEFT = 18;                    // reduced left margin
+  const CELL = 11, GAP = 2;
+  const TOP  = 10;
+  const LEFT = 18;
   const weeks = Math.ceil(dates.length / 7);
 
   // Month labels (first week of each month)
@@ -526,7 +531,7 @@
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // keep centered
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   svg.style.display = 'block';
   svg.style.maxWidth = '100%';
   svg.style.height = 'auto';
@@ -542,7 +547,7 @@
     svg.appendChild(tx);
   });
 
-  // Weekday labels (Mon, Wed, Fri) – tight and aligned
+  // Weekday labels (Mon, Wed, Fri)
   [['Mon',1],['Wed',3],['Fri',5]].forEach(([label,row]) => {
     const tx = document.createElementNS('http://www.w3.org/2000/svg','text');
     tx.setAttribute('x', 0);
@@ -572,7 +577,7 @@
       rect.setAttribute('stroke-width', lvl === 0 ? 0.6 : 0);
 
       const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-      title.textContent = `${d.toISOString().slice(0,10)}\nProfit: ₹${(v||0).toFixed(2)}`;
+      title.textContent = `${ymdLocal(d)}\nProfit: ₹${(v||0).toFixed(2)}`; // LOCAL tooltip
       rect.appendChild(title);
 
       svg.appendChild(rect);
@@ -580,7 +585,6 @@
     }
   }
 
-  // Center inside the flex container and remove previous content
   mount.innerHTML = '';
   mount.appendChild(svg);
 })();
@@ -603,6 +607,7 @@
     exportCSV('inventory_remaining.csv', ['medicine','remaining_qty'], inv.map(r => [r.name, r.remaining]));
     exportCSV('profit_by_medicine.csv', ['medicine','profit'], pf.map(r => [r.name, r.profit]));
   });
+
   // ===== Sell-through % from weekly (Sold ÷ (Bought+Sold)) =====
 if (document.getElementById('plSellThrough')) {
   const weeks = (wk || []).map(d => d.week);
@@ -624,7 +629,6 @@ if (document.getElementById('plSellThrough')) {
       { responsive:true }
     );
   } else {
-    // draw a faint baseline + annotation so the card isn't empty
     Plotly.newPlot(
       'plSellThrough',
       [{ type:'scatter', mode:'lines', x: weeks, y: weeks.map(() => 0), line:{ width:1, dash:'dot' }, hoverinfo:'skip', name:'No data' }],
@@ -640,6 +644,7 @@ if (document.getElementById('plSellThrough')) {
     );
   }
 }
+
 // ======== Profit Calendar (GitHub-style — robust) ====================
 (function buildProfitCalendar(){
   const mount = document.getElementById('profitCal');
@@ -654,7 +659,7 @@ if (document.getElementById('plSellThrough')) {
     avgCost.set(String(r.medicine), sold > 0 ? (cogs / sold) : 0);
   });
 
-  // Daily profit from SOLD rows (if no data, stays empty → grid shows zeros)
+  // Daily profit from SOLD rows
   const profitByDate = new Map();
   ALL_TXN.forEach(t => {
     if (String(t.ttype||'').toUpperCase() !== 'SOLD') return;
@@ -674,7 +679,7 @@ if (document.getElementById('plSellThrough')) {
 
   const dates = [], vals = [];
   for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
-    const key = d.toISOString().slice(0,10);
+    const key = ymdLocal(d); // LOCAL key
     dates.push(new Date(d));
     vals.push(Number(profitByDate.get(key)||0));
   }
@@ -683,10 +688,10 @@ if (document.getElementById('plSellThrough')) {
   const step = positiveMax > 0 ? positiveMax / 4 : 1;
   const toLevel = v => (v <= 0 ? 0 : v <= step ? 1 : v <= step*2 ? 2 : v <= step*3 ? 3 : 4);
 
-  // GitHub palette; make level-0 slightly CONTRASTY in dark mode
+  // GitHub palette
   const dark = document.documentElement.classList.contains('dark');
   const colorsLight = ['#ebedf0','#9be9a8','#40c463','#30a14e','#216e39'];
-  const colorsDark  = ['#0e1623','#0e4429','#006d32','#26a641','#39d353']; // level-0 darker-blue so it shows on your card
+  const colorsDark  = ['#0e1623','#0e4429','#006d32','#26a641','#39d353'];
   const palette = dark ? colorsDark : colorsLight;
 
   const CELL = 11, GAP = 2, TOP = 18, LEFT = 28;
@@ -695,7 +700,7 @@ if (document.getElementById('plSellThrough')) {
   // Month labels
   const monthLabels = [];
   for (let w = 0; w < weeks; w++) {
-    const d = new Date(start); d.setDate(d.getDate() + w*7); // Sunday column
+    const d = new Date(start); d.setDate(d.getDate() + w*7);
     const prev = new Date(d); prev.setDate(prev.getDate() - 7);
     if (w === 0 || d.getMonth() !== prev.getMonth()) {
       monthLabels.push({ week:w, label:d.toLocaleString('default',{month:'short'}) });
@@ -745,11 +750,11 @@ if (document.getElementById('plSellThrough')) {
       rect.setAttribute('height', CELL);
       rect.setAttribute('rx', 2); rect.setAttribute('ry', 2);
       rect.setAttribute('fill', palette[lvl]);
-      rect.setAttribute('stroke', dark ? '#0b1220' : '#ffffff'); // make zero cells visible
+      rect.setAttribute('stroke', dark ? '#0b1220' : '#ffffff'); // zero cells visible
       rect.setAttribute('stroke-width', lvl === 0 ? 0.6 : 0);
 
       const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-      title.textContent = `${d.toISOString().slice(0,10)}\nProfit: ₹${(v||0).toFixed(2)}`;
+      title.textContent = `${ymdLocal(d)}\nProfit: ₹${(v||0).toFixed(2)}`; // LOCAL tooltip
       rect.appendChild(title);
 
       svg.appendChild(rect);
@@ -825,7 +830,7 @@ if (document.getElementById('plSellThrough')) {
       );
       XLSX.utils.book_append_sheet(wb, wsSum, "Profit_Inventory_Summary");
 
-      const stamp = new Date().toISOString().slice(0,10);
+      const stamp = ymdLocal(new Date());
       XLSX.writeFile(wb, `MedShop_Reports_${stamp}.xlsx`);
     } catch (err) {
       console.error("Excel export error:", err);
