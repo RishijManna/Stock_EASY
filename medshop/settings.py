@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.humanize",   # ← add this
+    "django.contrib.humanize",
     "inventory",
     "accounts",
     "reports",
@@ -87,7 +87,6 @@ except Exception:
     dj_database_url = None
 
 if DEBUG:
-    # Local development: SQLite is fine
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -95,7 +94,6 @@ if DEBUG:
         }
     }
 else:
-    # Production: refuse to start without DATABASE_URL
     db_url = os.getenv("DATABASE_URL")
     if not (db_url and dj_database_url):
         raise RuntimeError(
@@ -127,7 +125,6 @@ USE_TZ = True
 # ------------------------------------------------------------
 # Static & Media
 # ------------------------------------------------------------
-# --- Static & Media ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
@@ -135,14 +132,13 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 
-# Default (dev)
+# Default (dev) media location
 MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
 
-# On Render, write to a proper writable mount (add a disk) or fall back to /tmp
+# On Render (runtime), point to your mounted disk (or env override).
+# IMPORTANT: do NOT mkdir here (build env is read-only).
 if os.getenv("RENDER") == "true":
-    MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/var/media")  # set this env or keep default
-    os.makedirs(MEDIA_ROOT, exist_ok=True)              # ensure the folder exists
-
+    MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/var/media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -153,6 +149,6 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 60 * 60 * 24  # 1 day to start; raise after verifying HTTPS works
+    SECURE_HSTS_SECONDS = 60 * 60 * 24  # raise after verifying
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
