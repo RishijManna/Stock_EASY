@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.humanize",
+    "django.contrib.humanize",   # ← add this
     "inventory",
     "accounts",
     "reports",
@@ -87,6 +87,7 @@ except Exception:
     dj_database_url = None
 
 if DEBUG:
+    # Local development: SQLite is fine
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -94,6 +95,7 @@ if DEBUG:
         }
     }
 else:
+    # Production: refuse to start without DATABASE_URL
     db_url = os.getenv("DATABASE_URL")
     if not (db_url and dj_database_url):
         raise RuntimeError(
@@ -128,17 +130,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"  # for collectstatic on Render
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
+
+# Whitenoise optimized storage
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-
-# Default for local dev
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
-
-# On Render: prefer disk at /var/data/media (set via env or dashboard mount).
-# If not provided, fall back to /tmp/media so uploads still work (non-persistent).
-if os.getenv("RENDER") == "true":
-    MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/tmp/media")
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
