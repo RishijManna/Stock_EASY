@@ -127,15 +127,22 @@ USE_TZ = True
 # ------------------------------------------------------------
 # Static & Media
 # ------------------------------------------------------------
+# --- Static & Media ---
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"  # for collectstatic on Render
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
-
-# Whitenoise optimized storage
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+
+# Default (dev)
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
+
+# On Render, write to a proper writable mount (add a disk) or fall back to /tmp
+if os.getenv("RENDER") == "true":
+    MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/var/media")  # set this env or keep default
+    os.makedirs(MEDIA_ROOT, exist_ok=True)              # ensure the folder exists
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
